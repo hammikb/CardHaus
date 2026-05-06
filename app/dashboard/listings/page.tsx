@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import EmptyState from '@/components/empty-state'
 
 export default async function DashboardListingsPage() {
   const supabase = await createClient()
@@ -51,12 +52,13 @@ export default async function DashboardListingsPage() {
           </div>
         ))}
         {!listings?.length && (
-          <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
-            <p className="text-slate-500 font-medium">No listings yet.</p>
-            <Link href="/listings/new" className="text-blue-600 hover:text-blue-700 font-semibold mt-2 inline-block">
-              Create your first listing →
-            </Link>
-          </div>
+          <EmptyState
+            title="No listings yet"
+            description="Start by creating your first listing. You can add photos, set a price, and reach buyers immediately."
+            actionText="Create First Listing"
+            actionHref="/listings/new"
+            icon="🎯"
+          />
         )}
       </div>
     </main>

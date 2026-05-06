@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
 import { redirect } from 'next/navigation'
+import EmptyState from '@/components/empty-state'
 
 export default async function DashboardOrdersPage() {
   const supabase = await createClient()
@@ -50,9 +51,13 @@ export default async function DashboardOrdersPage() {
           </div>
         ))}
         {!orders?.length && (
-          <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
-            <p className="text-slate-500 font-medium">No orders yet.</p>
-          </div>
+          <EmptyState
+            title="No orders yet"
+            description="Once you make your first purchase, it will appear here. Browse the marketplace to find cards."
+            actionText="Browse Marketplace"
+            actionHref="/marketplace"
+            icon="📦"
+          />
         )}
       </div>
     </main>
