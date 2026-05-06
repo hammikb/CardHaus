@@ -131,10 +131,6 @@ export default async function SealedPage(props: { searchParams: Promise<Record<s
                   <ListingCard
                     key={card.id}
                     listing={card}
-                    seller={{
-                      username: card.profiles?.username || 'Unknown',
-                      verified_vendor: card.profiles?.verified_vendor || false,
-                    }}
                   />
                 ))}
               </div>
