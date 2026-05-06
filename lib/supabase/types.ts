@@ -1,9 +1,11 @@
 export type UserRole = 'buyer' | 'seller' | 'vendor' | 'admin'
-export type CardType = 'pokemon' | 'mtg' | 'sports' | 'other'
+export type CardType = 'pokemon' | 'mtg' | 'sports' | 'yugioh' | 'lorcana' | 'one_piece' | 'digimon' | 'other'
+export type ProductType = 'single' | 'graded' | 'sealed'
+export type SealedType = 'booster_box' | 'booster_pack' | 'elite_trainer_box' | 'collection_box' | 'tin' | 'bundle' | 'blister' | 'other'
 export type Condition = 'poor' | 'good' | 'excellent' | 'near_mint' | 'mint' | 'graded'
 export type ListingStatus = 'active' | 'sold' | 'removed'
 export type OrderStatus = 'paid' | 'shipped' | 'delivered' | 'disputed' | 'refunded'
-export type GradeCompany = 'PSA' | 'BGS' | 'CGC'
+export type GradeCompany = 'PSA' | 'BGS' | 'CGC' | 'SGC'
 
 export interface Profile {
   id: string
@@ -29,6 +31,9 @@ export interface Listing {
   images: string[]
   status: ListingStatus
   is_auction: boolean
+  product_type: ProductType
+  sealed_type: SealedType | null
+  quantity: number
   created_at: string
   profiles?: Profile
 }

@@ -2,11 +2,14 @@ import ListingCard from '@/components/listing-card'
 import EmptyState from '@/components/empty-state'
 import { Listing } from '@/lib/supabase/types'
 
-const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'other']
+const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'yugioh', 'lorcana', 'one_piece', 'digimon', 'other']
 const CONDITIONS = ['poor', 'good', 'excellent', 'near_mint', 'mint', 'graded']
 
 async function getListings(searchParams: Record<string, string>) {
-  const params = new URLSearchParams(searchParams).toString()
+  const params = new URLSearchParams({
+    ...searchParams,
+    product_type: searchParams.product_type || 'single',
+  }).toString()
   const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/listings?${params}`, { cache: 'no-store' })
   return res.json() as Promise<Listing[]>
 }

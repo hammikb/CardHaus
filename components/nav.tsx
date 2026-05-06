@@ -32,6 +32,12 @@ export default function Nav() {
           <Link href="/auctions" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
             Auctions
           </Link>
+          <Link href="/graded" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
+            Graded
+          </Link>
+          <Link href="/sealed" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
+            Sealed
+          </Link>
           {user ? (
             <>
               <Link

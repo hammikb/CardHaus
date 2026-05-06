@@ -6,6 +6,7 @@ export interface CardData {
   rarity: string | null
   imageUrl: string | null
   condition: string
+  game: string
 }
 
 interface TCGCSVProduct {
@@ -31,30 +32,38 @@ interface TCGCSVPrice {
 
 const TCGCSV_API = 'https://tcgcsv.com/api'
 
-export async function fetchTCGCSVPokemonCards(): Promise<CardData[]> {
+// TCG category IDs from TCGCSV
+const TCG_CATEGORIES = {
+  mtg: 1,
+  pokemon: 3,
+  yugioh: 2,
+  sports: 4,
+  digimon: 5,
+  lorcana: 6,
+  one_piece: 7,
+} as const
+
+async function fetchCardsByCategory(categoryId: number, gameName: string): Promise<CardData[]> {
   try {
-    console.log('Fetching Pokémon cards from TCGCSV...')
+    console.log(`Fetching ${gameName} cards from TCGCSV (category ${categoryId})...`)
 
-    // Get category ID for Pokémon (3)
-    const categoryId = 3
-
-    // Fetch all Pokémon products
     const productsUrl = `${TCGCSV_API}/tcgplayer/products?categoryId=${categoryId}`
     const productsResponse = await fetch(productsUrl, {
       headers: { 'User-Agent': 'CardHaus/1.0' },
     })
 
     if (!productsResponse.ok) {
-      throw new Error(`TCGCSV products fetch failed: ${productsResponse.status}`)
+      console.warn(`Failed to fetch ${gameName} products: ${productsResponse.status}`)
+      return []
     }
 
     const products: TCGCSVProduct[] = await productsResponse.json()
-    console.log(`Fetched ${products.length} Pokémon products from TCGCSV`)
-
     if (!Array.isArray(products) || products.length === 0) {
-      console.warn('No products returned from TCGCSV')
+      console.warn(`No ${gameName} products returned from TCGCSV`)
       return []
     }
+
+    console.log(`Fetched ${products.length} ${gameName} products from TCGCSV`)
 
     // Fetch pricing for all products
     const pricesUrl = `${TCGCSV_API}/tcgplayer/prices`
@@ -63,13 +72,13 @@ export async function fetchTCGCSVPokemonCards(): Promise<CardData[]> {
     })
 
     if (!pricesResponse.ok) {
-      throw new Error(`TCGCSV prices fetch failed: ${pricesResponse.status}`)
+      console.warn(`Failed to fetch prices: ${pricesResponse.status}`)
+      return []
     }
 
     const prices: TCGCSVPrice[] = await pricesResponse.json()
     const priceMap = new Map(prices.map(p => [p.productId, p]))
 
-    // Transform to CardData format
     const cards: CardData[] = products.map(product => {
       const pricing = priceMap.get(product.productId)
       const price = pricing?.marketPrice || pricing?.midPrice || null
@@ -79,18 +88,42 @@ export async function fetchTCGCSVPokemonCards(): Promise<CardData[]> {
         name: product.name,
         set: extractSetFromName(product.name),
         price,
-        rarity: null, // TCGCSV doesn't provide rarity
+        rarity: null,
         imageUrl: `https://tcgcsv.com/image/product/${product.productId}`,
-        condition: 'NM', // Default to Near Mint
+        condition: 'NM',
+        game: gameName,
       }
     })
 
-    console.log(`Transformed ${cards.length} cards with pricing data`)
+    console.log(`Transformed ${cards.length} ${gameName} cards with pricing data`)
     return cards
   } catch (error) {
-    console.error('TCGCSV fetch error:', error)
-    throw error
+    console.error(`Error fetching ${gameName} cards:`, error)
+    return []
   }
+}
+
+export async function fetchAllTCGCards(): Promise<CardData[]> {
+  try {
+    console.log('Fetching cards from all TCG categories...')
+    const allCards: CardData[] = []
+
+    // Fetch from primary categories
+    for (const [game, categoryId] of Object.entries(TCG_CATEGORIES)) {
+      const cards = await fetchCardsByCategory(categoryId, game)
+      allCards.push(...cards)
+    }
+
+    console.log(`Total cards fetched: ${allCards.length}`)
+    return allCards
+  } catch (error) {
+    console.error('Error fetching all TCG cards:', error)
+    return []
+  }
+}
+
+export async function fetchTCGCSVPokemonCards(): Promise<CardData[]> {
+  return fetchCardsByCategory(TCG_CATEGORIES.pokemon, 'pokemon')
 }
 
 function extractSetFromName(productName: string): string {
@@ -101,17 +134,22 @@ function extractSetFromName(productName: string): string {
   return match ? match[1].trim() : 'Unknown'
 }
 
-export async function searchTCGCSVCards(query: string): Promise<CardData[]> {
+export async function searchTCGCSVCards(query: string, categoryId?: number): Promise<CardData[]> {
   try {
     if (query.length < 2) return []
 
-    const url = `${TCGCSV_API}/tcgplayer/products?q=${encodeURIComponent(query)}&categoryId=3`
+    // If specific category provided, search that; otherwise search Pokémon by default
+    const catId = categoryId || TCG_CATEGORIES.pokemon
+    const gameName = Object.entries(TCG_CATEGORIES).find(([_, id]) => id === catId)?.[0] || 'pokemon'
+
+    const url = `${TCGCSV_API}/tcgplayer/products?q=${encodeURIComponent(query)}&categoryId=${catId}`
     const response = await fetch(url, {
       headers: { 'User-Agent': 'CardHaus/1.0' },
     })
 
     if (!response.ok) {
-      throw new Error(`Search failed: ${response.status}`)
+      console.warn(`Search failed: ${response.status}`)
+      return []
     }
 
     const products: TCGCSVProduct[] = await response.json()
@@ -124,6 +162,7 @@ export async function searchTCGCSVCards(query: string): Promise<CardData[]> {
       rarity: null,
       imageUrl: `https://tcgcsv.com/image/product/${product.productId}`,
       condition: 'NM',
+      game: gameName,
     }))
   } catch (error) {
     console.error('TCGCSV search error:', error)

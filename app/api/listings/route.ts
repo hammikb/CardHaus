@@ -14,12 +14,14 @@ export async function GET(request: NextRequest) {
 
   const cardType = searchParams.get('card_type')
   const condition = searchParams.get('condition')
+  const productType = searchParams.get('product_type')
   const minPrice = searchParams.get('min_price')
   const maxPrice = searchParams.get('max_price')
   const q = searchParams.get('q')
 
   if (cardType) query = query.eq('card_type', cardType)
   if (condition) query = query.eq('condition', condition)
+  if (productType) query = query.eq('product_type', productType)
   if (minPrice) query = query.gte('price', Number(minPrice))
   if (maxPrice) query = query.lte('price', Number(maxPrice))
   if (q) query = query.textSearch('title', q)
@@ -35,7 +37,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { title, description, price, card_type, condition, grade, grade_company, images } = body
+  const { title, description, price, card_type, condition, grade, grade_company, images, product_type, sealed_type, quantity } = body
 
   if (!title || !price || !card_type || !condition) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -43,7 +45,20 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('listings')
-    .insert({ seller_id: user.id, title, description, price, card_type, condition, grade, grade_company, images: images ?? [] })
+    .insert({
+      seller_id: user.id,
+      title,
+      description,
+      price,
+      card_type,
+      condition,
+      grade,
+      grade_company,
+      images: images ?? [],
+      product_type: product_type ?? 'single',
+      sealed_type: sealed_type ?? null,
+      quantity: quantity ?? 1,
+    })
     .select()
     .single()
 

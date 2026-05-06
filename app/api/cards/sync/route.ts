@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { fetchTCGCSVPokemonCards } from '@/lib/tcgcsv-api'
+import { fetchAllTCGCards } from '@/lib/tcgcsv-api'
 import { fetchJustTCGPokemonCards } from '@/lib/justtcg-api'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -10,16 +10,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    console.log('Starting Pokémon card sync...')
+    console.log('Starting card sync from all TCG sources...')
 
-    // Primary source: TCGCSV
-    let cards = await fetchTCGCSVPokemonCards()
-    console.log(`Fetched ${cards.length} cards from TCGCSV`)
+    // Primary source: TCGCSV (all TCGs)
+    let cards = await fetchAllTCGCards()
+    console.log(`Fetched ${cards.length} cards from TCGCSV across all TCGs`)
 
-    // Fallback: JustTCG if TCGCSV fails or returns few cards
-    if (cards.length < 100) {
-      console.log('TCGCSV returned few cards, fetching from JustTCG...')
-      const justTcgCards = await fetchJustTCGPokemonCards(100)
+    // Fallback: JustTCG for Pokémon if TCGCSV returns few
+    if (cards.filter(c => c.game === 'pokemon').length < 500) {
+      console.log('TCGCSV Pokémon returned few cards, fetching from JustTCG...')
+      const justTcgCards = await fetchJustTCGPokemonCards(200)
 
       // Merge: add JustTCG cards not in TCGCSV
       const tcgcsNameSet = new Set(cards.map(c => c.name.toLowerCase()))
@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
         rarity: c.rarity,
         image_url: c.imageUrl,
         condition: c.condition,
+        game: c.game,
         synced_at: new Date().toISOString(),
       })),
       { onConflict: 'tcg_player_id' }

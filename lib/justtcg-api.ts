@@ -6,6 +6,7 @@ export interface CardData {
   rarity: string | null
   imageUrl: string | null
   condition: string
+  game: string
 }
 
 interface JustTCGCard {
@@ -58,6 +59,7 @@ export async function searchJustTCGCards(query: string, game: string = 'pokemon'
       rarity: card.rarity || null,
       imageUrl: card.image?.url || null,
       condition: 'NM',
+      game: 'pokemon',
     }))
   } catch (error) {
     console.error('JustTCG search error:', error)
@@ -96,6 +98,7 @@ export async function fetchJustTCGPokemonCards(limit: number = 100): Promise<Car
       rarity: card.rarity || null,
       imageUrl: card.image?.url || null,
       condition: 'NM',
+      game: 'pokemon',
     }))
   } catch (error) {
     console.error('JustTCG fetch error:', error)
