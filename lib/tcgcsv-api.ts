@@ -30,7 +30,7 @@ interface TCGCSVPrice {
   directMarketPrice: number | null
 }
 
-const TCGCSV_API = 'https://tcgcsv.com/api'
+const TCGCSV_API = 'https://tcgcsv.com/tcgplayer'
 
 // TCG category IDs from TCGCSV
 const TCG_CATEGORIES = {
@@ -43,30 +43,49 @@ const TCG_CATEGORIES = {
   one_piece: 7,
 } as const
 
-async function fetchCardsByCategory(categoryId: number, gameName: string): Promise<CardData[]> {
-  try {
-    console.log(`Fetching ${gameName} cards from TCGCSV (category ${categoryId})...`)
+// GroupIds per category (discovered via TCGCSV API)
+// To find more groupIds for a category, visit: https://tcgcsv.com/tcgplayer/{categoryId}/{groupId}/products
+const TCG_GROUP_IDS: Record<number, number[]> = {
+  1: [], // MTG - add groupIds as discovered
+  2: [], // Yu-Gi-Oh - add groupIds as discovered
+  3: [3170], // Pokemon - groupId 3170 confirmed
+  4: [], // Sports - add groupIds as discovered
+  5: [], // Digimon - add groupIds as discovered
+  6: [], // Lorcana - add groupIds as discovered
+  7: [], // One Piece - add groupIds as discovered
+}
 
-    const productsUrl = `${TCGCSV_API}/tcgplayer/products?categoryId=${categoryId}`
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function fetchCardsByGroup(categoryId: number, groupId: number, gameName: string): Promise<CardData[]> {
+  try {
+    console.log(`Fetching ${gameName} cards (category ${categoryId}, group ${groupId})...`)
+
+    const productsUrl = `${TCGCSV_API}/${categoryId}/${groupId}/products`
     const productsResponse = await fetch(productsUrl, {
       headers: { 'User-Agent': 'CardHaus/1.0' },
     })
 
     if (!productsResponse.ok) {
-      console.warn(`Failed to fetch ${gameName} products: ${productsResponse.status}`)
+      console.warn(`Failed to fetch products: ${productsResponse.status}`)
       return []
     }
 
     const products: TCGCSVProduct[] = await productsResponse.json()
     if (!Array.isArray(products) || products.length === 0) {
-      console.warn(`No ${gameName} products returned from TCGCSV`)
+      console.warn(`No ${gameName} products in group ${groupId}`)
       return []
     }
 
-    console.log(`Fetched ${products.length} ${gameName} products from TCGCSV`)
+    console.log(`Fetched ${products.length} ${gameName} products`)
+
+    // 100ms delay per docs
+    await sleep(100)
 
     // Fetch pricing for all products
-    const pricesUrl = `${TCGCSV_API}/tcgplayer/prices`
+    const pricesUrl = `${TCGCSV_API}/${categoryId}/${groupId}/prices`
     const pricesResponse = await fetch(pricesUrl, {
       headers: { 'User-Agent': 'CardHaus/1.0' },
     })
@@ -108,10 +127,18 @@ export async function fetchAllTCGCards(): Promise<CardData[]> {
     console.log('Fetching cards from all TCG categories...')
     const allCards: CardData[] = []
 
-    // Fetch from primary categories
     for (const [game, categoryId] of Object.entries(TCG_CATEGORIES)) {
-      const cards = await fetchCardsByCategory(categoryId, game)
-      allCards.push(...cards)
+      const groupIds = TCG_GROUP_IDS[categoryId as number]
+
+      if (groupIds.length === 0) {
+        console.warn(`No groupIds configured for ${game} (category ${categoryId}). Skipping.`)
+        continue
+      }
+
+      for (const groupId of groupIds) {
+        const cards = await fetchCardsByGroup(categoryId as number, groupId, game)
+        allCards.push(...cards)
+      }
     }
 
     console.log(`Total cards fetched: ${allCards.length}`)
@@ -123,7 +150,15 @@ export async function fetchAllTCGCards(): Promise<CardData[]> {
 }
 
 export async function fetchTCGCSVPokemonCards(): Promise<CardData[]> {
-  return fetchCardsByCategory(TCG_CATEGORIES.pokemon, 'pokemon')
+  const pokemonGroupIds = TCG_GROUP_IDS[TCG_CATEGORIES.pokemon]
+  const allCards: CardData[] = []
+
+  for (const groupId of pokemonGroupIds) {
+    const cards = await fetchCardsByGroup(TCG_CATEGORIES.pokemon, groupId, 'pokemon')
+    allCards.push(...cards)
+  }
+
+  return allCards
 }
 
 function extractSetFromName(productName: string): string {
@@ -141,29 +176,44 @@ export async function searchTCGCSVCards(query: string, categoryId?: number): Pro
     // If specific category provided, search that; otherwise search Pokémon by default
     const catId = categoryId || TCG_CATEGORIES.pokemon
     const gameName = Object.entries(TCG_CATEGORIES).find(([_, id]) => id === catId)?.[0] || 'pokemon'
+    const groupIds = TCG_GROUP_IDS[catId]
 
-    const url = `${TCGCSV_API}/tcgplayer/products?q=${encodeURIComponent(query)}&categoryId=${catId}`
-    const response = await fetch(url, {
-      headers: { 'User-Agent': 'CardHaus/1.0' },
-    })
-
-    if (!response.ok) {
-      console.warn(`Search failed: ${response.status}`)
+    if (groupIds.length === 0) {
+      console.warn(`No groupIds configured for search in category ${catId}`)
       return []
     }
 
-    const products: TCGCSVProduct[] = await response.json()
+    const results: CardData[] = []
 
-    return products.map(product => ({
-      tcgPlayerId: product.productId.toString(),
-      name: product.name,
-      set: extractSetFromName(product.name),
-      price: null,
-      rarity: null,
-      imageUrl: `https://tcgcsv.com/image/product/${product.productId}`,
-      condition: 'NM',
-      game: gameName,
-    }))
+    // Search across all groups for this category
+    for (const groupId of groupIds) {
+      const url = `${TCGCSV_API}/${catId}/${groupId}/products?q=${encodeURIComponent(query)}`
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'CardHaus/1.0' },
+      })
+
+      if (!response.ok) {
+        console.warn(`Search failed in group ${groupId}: ${response.status}`)
+        continue
+      }
+
+      const products: TCGCSVProduct[] = await response.json()
+
+      results.push(...products.map(product => ({
+        tcgPlayerId: product.productId.toString(),
+        name: product.name,
+        set: extractSetFromName(product.name),
+        price: null,
+        rarity: null,
+        imageUrl: `https://tcgcsv.com/image/product/${product.productId}`,
+        condition: 'NM',
+        game: gameName,
+      })))
+
+      await sleep(100)
+    }
+
+    return results
   } catch (error) {
     console.error('TCGCSV search error:', error)
     return []
