@@ -122,10 +122,8 @@ export default async function SealedPage(props: { searchParams: Promise<Record<s
                 icon="📦"
                 title="No sealed products found"
                 description="Be the first to list a sealed product"
-                action={{
-                  label: 'List a Sealed Product',
-                  href: '/listings/sealed/new',
-                }}
+                actionText="List a Sealed Product"
+                actionHref="/listings/sealed/new"
               />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

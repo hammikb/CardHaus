@@ -113,10 +113,8 @@ export default async function GradedPage(props: { searchParams: Promise<Record<s
                 icon="🏆"
                 title="No graded cards found"
                 description="Be the first to list a graded card"
-                action={{
-                  label: 'List a Graded Card',
-                  href: '/listings/graded/new',
-                }}
+                actionText="List a Graded Card"
+                actionHref="/listings/graded/new"
               />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
