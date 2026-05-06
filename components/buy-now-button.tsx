@@ -17,9 +17,12 @@ export default function BuyNowButton({ listingId }: { listingId: string }) {
   }
 
   return (
-    <button onClick={handleBuy} disabled={loading}
-      className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 disabled:opacity-50">
-      {loading ? 'Redirecting...' : 'Buy Now'}
+    <button
+      onClick={handleBuy}
+      disabled={loading}
+      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {loading ? 'Redirecting to Stripe...' : 'Buy Now'}
     </button>
   )
 }

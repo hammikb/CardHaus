@@ -15,27 +15,49 @@ export default async function DashboardListingsPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">My Listings</h1>
-        <Link href="/listings/new" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">
+    <main className="max-w-4xl mx-auto px-4 py-12">
+      <div className="flex justify-between items-center mb-10">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 mb-1">My Listings</h1>
+          <p className="text-slate-600">{listings?.length ?? 0} total</p>
+        </div>
+        <Link
+          href="/listings/new"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
+        >
           + New Listing
         </Link>
       </div>
       <div className="space-y-3">
         {listings?.map(l => (
-          <div key={l.id} className="bg-white border rounded-lg p-4 flex items-center justify-between">
-            <div>
-              <p className="font-semibold">{l.title}</p>
-              <p className="text-sm text-gray-500 capitalize">{l.card_type} · {l.condition.replace('_', ' ')} · {formatCurrency(l.price)}</p>
+          <div key={l.id} className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div className="flex-1">
+              <p className="font-bold text-slate-900">{l.title}</p>
+              <p className="text-sm text-slate-600 mt-1 capitalize">
+                {l.card_type} · {l.condition.replace('_', ' ')} · <span className="font-semibold text-blue-600">{formatCurrency(l.price)}</span>
+              </p>
             </div>
-            <span className={`text-xs px-2 py-1 rounded font-medium capitalize ${
-              l.status === 'active' ? 'bg-green-100 text-green-700' :
-              l.status === 'sold' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-700'
-            }`}>{l.status}</span>
+            <span
+              className={`text-xs px-4 py-2 rounded-lg font-bold capitalize whitespace-nowrap ml-4 ${
+                l.status === 'active'
+                  ? 'bg-green-100 text-green-700'
+                  : l.status === 'sold'
+                    ? 'bg-slate-100 text-slate-600'
+                    : 'bg-red-100 text-red-700'
+              }`}
+            >
+              {l.status}
+            </span>
           </div>
         ))}
-        {!listings?.length && <p className="text-gray-500">No listings yet.</p>}
+        {!listings?.length && (
+          <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
+            <p className="text-slate-500 font-medium">No listings yet.</p>
+            <Link href="/listings/new" className="text-blue-600 hover:text-blue-700 font-semibold mt-2 inline-block">
+              Create your first listing →
+            </Link>
+          </div>
+        )}
       </div>
     </main>
   )

@@ -19,33 +19,58 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const isOwner = user?.id === listing.seller_id
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+    <main className="max-w-5xl mx-auto px-4 py-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl overflow-hidden shadow-lg">
           {listing.images[0] ? (
             <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">No image</div>
+            <div className="w-full h-full flex items-center justify-center text-slate-400 text-lg font-medium">No image</div>
           )}
         </div>
         <div>
-          <p className="text-sm text-gray-500 capitalize mb-1">{listing.card_type} · {listing.condition.replace('_', ' ')}</p>
-          <h1 className="text-2xl font-bold mb-2">{listing.title}</h1>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-sm font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full capitalize">
+              {listing.card_type}
+            </span>
+            <span className="text-sm font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full capitalize">
+              {listing.condition.replace('_', ' ')}
+            </span>
+          </div>
+          <h1 className="text-4xl font-black text-slate-900 mb-3">{listing.title}</h1>
           {listing.grade && (
-            <p className="text-sm text-gray-600 mb-2">{listing.grade_company} {listing.grade}</p>
+            <p className="text-sm font-semibold text-blue-600 mb-4 bg-blue-50 px-3 py-1.5 rounded-lg inline-block">
+              {listing.grade_company} {listing.grade}
+            </p>
           )}
-          <p className="text-3xl font-bold text-blue-600 mb-4">{formatCurrency(listing.price)}</p>
-          {listing.description && <p className="text-gray-700 mb-6">{listing.description}</p>}
-          <p className="text-sm text-gray-500 mb-6">
-            Sold by <span className="font-medium">{listing.profiles?.username}</span>
-            {listing.profiles?.verified_vendor && <span className="ml-1 text-blue-600">✓ Verified</span>}
+          <p className="text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+            {formatCurrency(listing.price)}
           </p>
+          {listing.description && (
+            <p className="text-slate-700 leading-relaxed mb-8 text-lg">{listing.description}</p>
+          )}
+          <div className="border-t border-slate-200 pt-6 mb-8">
+            <p className="text-sm text-slate-600 mb-2">Sold by</p>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-900 text-lg">{listing.profiles?.username}</span>
+              {listing.profiles?.verified_vendor && (
+                <span className="bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded-full text-xs">
+                  ✓ Verified
+                </span>
+              )}
+            </div>
+          </div>
           {isOwner ? (
-            <p className="text-gray-500 text-sm">This is your listing.</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+              <p className="text-slate-700 font-semibold">This is your listing</p>
+            </div>
           ) : user ? (
             <BuyNowButton listingId={listing.id} />
           ) : (
-            <a href="/auth/login" className="block w-full text-center bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700">
+            <a
+              href="/auth/login"
+              className="block w-full text-center bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all"
+            >
               Sign in to Buy
             </a>
           )}

@@ -15,31 +15,54 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
   const listings = await getListings(params)
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Marketplace</h1>
+    <main className="max-w-7xl mx-auto px-4 py-12">
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-slate-900 mb-2">Marketplace</h1>
+        <p className="text-slate-600">Browse {listings.length} cards from verified sellers</p>
+      </div>
       <div className="flex gap-8">
-        <aside className="w-48 shrink-0">
-          <h2 className="font-semibold mb-3">Card Type</h2>
-          <div className="space-y-2">
-            {CARD_TYPES.map(t => (
-              <a key={t} href={`/marketplace?card_type=${t}`}
-                className="block text-sm capitalize hover:text-blue-600">{t}</a>
-            ))}
-            <a href="/marketplace" className="block text-sm text-gray-400 hover:text-blue-600">Clear</a>
-          </div>
-          <h2 className="font-semibold mt-6 mb-3">Condition</h2>
-          <div className="space-y-2">
-            {CONDITIONS.map(c => (
-              <a key={c} href={`/marketplace?condition=${c}`}
-                className="block text-sm capitalize hover:text-blue-600">{c.replace('_', ' ')}</a>
-            ))}
+        <aside className="w-56 shrink-0">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 sticky top-20">
+            <h2 className="font-black text-slate-900 mb-4">Card Type</h2>
+            <div className="space-y-2 mb-6">
+              {CARD_TYPES.map(t => (
+                <a
+                  key={t}
+                  href={`/marketplace?card_type=${t}`}
+                  className="block text-sm font-medium capitalize text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                >
+                  {t}
+                </a>
+              ))}
+              <a
+                href="/marketplace"
+                className="block text-sm font-medium text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg transition-colors italic"
+              >
+                Clear all
+              </a>
+            </div>
+            <h2 className="font-black text-slate-900 mb-4">Condition</h2>
+            <div className="space-y-2">
+              {CONDITIONS.map(c => (
+                <a
+                  key={c}
+                  href={`/marketplace?condition=${c}`}
+                  className="block text-sm font-medium capitalize text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                >
+                  {c.replace('_', ' ')}
+                </a>
+              ))}
+            </div>
           </div>
         </aside>
         <div className="flex-1">
           {listings.length === 0 ? (
-            <p className="text-gray-500">No listings found.</p>
+            <div className="text-center py-16">
+              <p className="text-slate-500 text-lg font-medium">No listings found.</p>
+              <p className="text-slate-400 text-sm mt-2">Try adjusting your filters</p>
+            </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
               {listings.map(l => <ListingCard key={l.id} listing={l} />)}
             </div>
           )}

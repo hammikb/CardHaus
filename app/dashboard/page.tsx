@@ -13,26 +13,42 @@ export default async function DashboardPage() {
   ])
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Seller Dashboard</h1>
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-white border rounded-lg p-6">
-          <p className="text-3xl font-bold">{listingCount ?? 0}</p>
-          <p className="text-gray-500 mt-1">Active Listings</p>
+    <main className="max-w-4xl mx-auto px-4 py-12">
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-slate-900 mb-2">Seller Dashboard</h1>
+        <p className="text-slate-600">Manage your listings and view orders</p>
+      </div>
+      <div className="grid grid-cols-2 gap-6 mb-10">
+        <div className="bg-white border border-slate-200 rounded-xl p-8 hover:shadow-lg transition-shadow">
+          <p className="text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            {listingCount ?? 0}
+          </p>
+          <p className="text-slate-600 mt-2 font-medium">Active Listings</p>
         </div>
-        <div className="bg-white border rounded-lg p-6">
-          <p className="text-3xl font-bold">{orderCount ?? 0}</p>
-          <p className="text-gray-500 mt-1">Total Orders</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-8 hover:shadow-lg transition-shadow">
+          <p className="text-5xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            {orderCount ?? 0}
+          </p>
+          <p className="text-slate-600 mt-2 font-medium">Total Orders</p>
         </div>
       </div>
-      <div className="flex gap-4">
-        <Link href="/listings/new" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Link
+          href="/listings/new"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all text-center"
+        >
           + New Listing
         </Link>
-        <Link href="/dashboard/listings" className="border px-4 py-2 rounded font-semibold hover:bg-gray-50">
+        <Link
+          href="/dashboard/listings"
+          className="bg-white border border-slate-200 text-slate-900 px-6 py-3 rounded-lg font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all text-center"
+        >
           Manage Listings
         </Link>
-        <Link href="/dashboard/orders" className="border px-4 py-2 rounded font-semibold hover:bg-gray-50">
+        <Link
+          href="/dashboard/orders"
+          className="bg-white border border-slate-200 text-slate-900 px-6 py-3 rounded-lg font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all text-center"
+        >
           View Orders
         </Link>
       </div>

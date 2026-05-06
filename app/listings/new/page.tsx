@@ -37,64 +37,111 @@ export default function NewListingPage() {
   }
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">List a Card</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <main className="max-w-2xl mx-auto px-4 py-12">
+      <div className="mb-10">
+        <h1 className="text-3xl font-black text-slate-900 mb-2">List a Card</h1>
+        <p className="text-slate-600">Fill out the details below to get your card listed</p>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-xl border border-slate-200 p-8">
         <div>
-          <label className="block text-sm font-medium mb-1">Title *</label>
-          <input value={form.title} onChange={e => set('title', e.target.value)}
-            placeholder="e.g. Charizard Base Set PSA 10"
-            className="w-full border rounded px-3 py-2" required />
+          <label className="block text-sm font-bold text-slate-900 mb-2">Title *</label>
+          <input
+            value={form.title}
+            onChange={e => set('title', e.target.value)}
+            placeholder="e.g. Charizard Base Set 1st Edition"
+            className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            required
+          />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Description</label>
-          <textarea value={form.description} onChange={e => set('description', e.target.value)}
-            rows={4} className="w-full border rounded px-3 py-2" />
+          <label className="block text-sm font-bold text-slate-900 mb-2">Description</label>
+          <textarea
+            value={form.description}
+            onChange={e => set('description', e.target.value)}
+            placeholder="Describe the card's condition, any flaws, special notes..."
+            rows={4}
+            className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+          />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1">Price (USD) *</label>
-            <input type="number" step="0.01" min="0.01" value={form.price}
+            <label className="block text-sm font-bold text-slate-900 mb-2">Price (USD) *</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={form.price}
               onChange={e => set('price', e.target.value)}
-              className="w-full border rounded px-3 py-2" required />
+              placeholder="0.00"
+              className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              required
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Card Type *</label>
-            <select value={form.card_type} onChange={e => set('card_type', e.target.value)}
-              className="w-full border rounded px-3 py-2">
-              {CARD_TYPES.map(t => <option key={t} value={t} className="capitalize">{t}</option>)}
+            <label className="block text-sm font-bold text-slate-900 mb-2">Card Type *</label>
+            <select
+              value={form.card_type}
+              onChange={e => set('card_type', e.target.value)}
+              className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+              {CARD_TYPES.map(t => (
+                <option key={t} value={t} className="capitalize">
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1">Condition *</label>
-            <select value={form.condition} onChange={e => set('condition', e.target.value)}
-              className="w-full border rounded px-3 py-2">
-              {CONDITIONS.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
+            <label className="block text-sm font-bold text-slate-900 mb-2">Condition *</label>
+            <select
+              value={form.condition}
+              onChange={e => set('condition', e.target.value)}
+              className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+              {CONDITIONS.map(c => (
+                <option key={c} value={c}>
+                  {c.replace('_', ' ').charAt(0).toUpperCase() + c.replace('_', ' ').slice(1)}
+                </option>
+              ))}
             </select>
           </div>
           {form.condition === 'graded' && (
             <div>
-              <label className="block text-sm font-medium mb-1">Grade Company</label>
-              <select value={form.grade_company} onChange={e => set('grade_company', e.target.value)}
-                className="w-full border rounded px-3 py-2">
+              <label className="block text-sm font-bold text-slate-900 mb-2">Grade Company</label>
+              <select
+                value={form.grade_company}
+                onChange={e => set('grade_company', e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              >
                 <option value="">Select...</option>
-                {GRADE_COMPANIES.map(g => <option key={g} value={g}>{g}</option>)}
+                {GRADE_COMPANIES.map(g => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
               </select>
             </div>
           )}
         </div>
         {form.condition === 'graded' && (
           <div>
-            <label className="block text-sm font-medium mb-1">Grade (e.g. 10, 9.5)</label>
-            <input value={form.grade} onChange={e => set('grade', e.target.value)}
-              placeholder="10" className="w-full border rounded px-3 py-2" />
+            <label className="block text-sm font-bold text-slate-900 mb-2">Grade (e.g. 10, 9.5)</label>
+            <input
+              value={form.grade}
+              onChange={e => set('grade', e.target.value)}
+              placeholder="10"
+              className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
           </div>
         )}
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button type="submit" disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 disabled:opacity-50">
+        {error && <p className="text-red-600 text-sm font-medium bg-red-50 px-4 py-2 rounded-lg">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-bold hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8"
+        >
           {loading ? 'Creating listing...' : 'List Card'}
         </button>
       </form>
