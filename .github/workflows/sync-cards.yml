@@ -14,4 +14,4 @@ jobs:
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
-            "${{ secrets.VERCEL_URL }}/api/cards/sync"
+            "https://card-haus-phi.vercel.app/api/cards/sync"
