@@ -1,4 +1,5 @@
 import ListingCard from '@/components/listing-card'
+import EmptyState from '@/components/empty-state'
 import { Listing } from '@/lib/supabase/types'
 
 const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'other']
@@ -57,10 +58,13 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
         </aside>
         <div className="flex-1">
           {listings.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-slate-500 text-lg font-medium">No listings found.</p>
-              <p className="text-slate-400 text-sm mt-2">Try adjusting your filters</p>
-            </div>
+            <EmptyState
+              title="No listings yet"
+              description="Start selling your first card to see it appear here. Explore existing listings or list your first card."
+              actionText="List Your First Card"
+              actionHref="/listings/new"
+              icon="📭"
+            />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
               {listings.map(l => <ListingCard key={l.id} listing={l} />)}
