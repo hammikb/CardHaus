@@ -1,18 +1,39 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --primary: #2563eb;
-  --primary-dark: #1e40af;
-  --accent: #7c3aed;
-  --success: #10b981;
-  --warning: #f59e0b;
+  /* Semantic colors */
+  --color-primary: #2563EB;        /* Blue - trust, CTA */
+  --color-primary-light: #DBEAFE;  /* Blue-100 */
+  --color-primary-dark: #1D4ED8;   /* Blue-700 */
+
+  --color-secondary: #E11D48;       /* Rose - energy */
+  --color-secondary-light: #FDF2F8; /* Rose-50 */
+
+  --color-accent: #10B981;          /* Green - success */
+  --color-accent-light: #ECFDF5;    /* Green-50 */
+
+  --color-background: #F8FAFC;      /* Slate-50 */
+  --color-foreground: #0F172A;      /* Slate-900 */
+  --color-muted: #E2E8F0;           /* Slate-200 */
+  --color-border: #CBD5E1;          /* Slate-300 */
+  --color-destructive: #DC2626;     /* Red-600 */
+  --color-destructive-light: #FEE2E2;
+
+  --color-ring: #2563EB;            /* Blue - focus ring */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #0F172A;
+    --color-foreground: #F1F5F9;
+    --color-muted: #334155;
+    --color-border: #475569;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -32,4 +53,12 @@ button, a {
 
 .card-hover {
   @apply transition-all duration-200 hover:shadow-lg hover:scale-105;
+}
+
+.focus-visible-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2;
+}
+
+.transition-smooth {
+  @apply transition-all duration-150 ease-out;
 }
