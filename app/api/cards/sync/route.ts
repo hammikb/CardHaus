@@ -11,8 +11,8 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Starting Pokemon card sync from Pokemon TCG API...')
 
-    // Fetch from Pokemon TCG API
-    const cards = await fetchAllPokemonCards(5000)
+    // Fetch from Pokemon TCG API (1000 limit for Vercel timeout)
+    const cards = await fetchAllPokemonCards(1000)
     console.log(`Fetched ${cards.length} Pokemon cards from Pokemon TCG API`)
 
     if (cards.length === 0) {
