@@ -40,6 +40,15 @@ interface PokemonTCGResponse {
 }
 
 const POKEMON_TCG_API = 'https://api.pokemontcg.io/v2'
+const API_KEY = process.env.POKEMON_TCG_API_KEY
+
+function getHeaders() {
+  const headers: Record<string, string> = { 'User-Agent': 'CardHaus/1.0' }
+  if (API_KEY) {
+    headers['X-Api-Key'] = API_KEY
+  }
+  return headers
+}
 
 export async function searchPokemonCards(query: string): Promise<CardData[]> {
   try {
@@ -47,7 +56,7 @@ export async function searchPokemonCards(query: string): Promise<CardData[]> {
 
     const url = `${POKEMON_TCG_API}/cards?q=name:${encodeURIComponent(query)}&pageSize=20`
     const response = await fetch(url, {
-      headers: { 'User-Agent': 'CardHaus/1.0' },
+      headers: getHeaders(),
     })
 
     if (!response.ok) {
@@ -84,7 +93,7 @@ export async function fetchAllPokemonCards(limit: number = 5000): Promise<CardDa
       console.log(`Fetching page ${page}...`)
 
       const response = await fetch(url, {
-        headers: { 'User-Agent': 'CardHaus/1.0' },
+        headers: getHeaders(),
       })
 
       if (!response.ok) {
