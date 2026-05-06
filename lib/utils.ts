@@ -10,3 +10,14 @@ export function calculateSellerPayout(price: number): number {
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 }
+
+export async function requireAdmin() {
+  const { createClient } = await import('@/lib/supabase/server')
+  const { redirect } = await import('next/navigation')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') redirect('/')
+  return { user, supabase }
+}
