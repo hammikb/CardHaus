@@ -1,0 +1,133 @@
+export interface CardData {
+  tcgPlayerId: string
+  name: string
+  set: string
+  price: number | null
+  rarity: string | null
+  imageUrl: string | null
+  condition: string
+  game: string
+}
+
+interface PokemonTCGCard {
+  id: string
+  name: string
+  rarity?: string
+  images?: {
+    small?: string
+    large?: string
+  }
+  cardmarket?: {
+    prices?: {
+      averageSellPrice?: number
+      lowPrice?: number
+      trendPrice?: number
+    }
+  }
+  set?: {
+    id?: string
+    name?: string
+    series?: string
+  }
+}
+
+interface PokemonTCGResponse {
+  data: PokemonTCGCard[]
+  page?: number
+  pageSize?: number
+  count?: number
+  totalCount?: number
+}
+
+const POKEMON_TCG_API = 'https://api.pokemontcg.io/v2'
+
+export async function searchPokemonCards(query: string): Promise<CardData[]> {
+  try {
+    if (query.length < 2) return []
+
+    const url = `${POKEMON_TCG_API}/cards?q=name:${encodeURIComponent(query)}&pageSize=20`
+    const response = await fetch(url, {
+      headers: { 'User-Agent': 'CardHaus/1.0' },
+    })
+
+    if (!response.ok) {
+      console.error(`Pokemon TCG search failed: ${response.status}`)
+      return []
+    }
+
+    const data: PokemonTCGResponse = await response.json()
+    return data.data.map((card: PokemonTCGCard) => ({
+      tcgPlayerId: `pokemon_${card.id}`,
+      name: card.name,
+      set: card.set?.name || 'Unknown',
+      price: card.cardmarket?.prices?.trendPrice || null,
+      rarity: card.rarity || null,
+      imageUrl: card.images?.large || card.images?.small || null,
+      condition: 'NM',
+      game: 'pokemon',
+    }))
+  } catch (error) {
+    console.error('Pokemon TCG search error:', error)
+    return []
+  }
+}
+
+export async function fetchAllPokemonCards(limit: number = 5000): Promise<CardData[]> {
+  try {
+    console.log('Fetching all Pokemon cards from Pokemon TCG API...')
+    const allCards: CardData[] = []
+    let page = 1
+    const pageSize = 250
+
+    while (allCards.length < limit) {
+      const url = `${POKEMON_TCG_API}/cards?pageSize=${pageSize}&page=${page}`
+      console.log(`Fetching page ${page}...`)
+
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'CardHaus/1.0' },
+      })
+
+      if (!response.ok) {
+        console.warn(`Failed to fetch page ${page}: ${response.status}`)
+        break
+      }
+
+      const data: PokemonTCGResponse = await response.json()
+
+      if (!data.data || data.data.length === 0) {
+        console.log('No more cards available')
+        break
+      }
+
+      const cards = data.data.map((card: PokemonTCGCard) => ({
+        tcgPlayerId: `pokemon_${card.id}`,
+        name: card.name,
+        set: card.set?.name || 'Unknown',
+        price: card.cardmarket?.prices?.trendPrice || null,
+        rarity: card.rarity || null,
+        imageUrl: card.images?.large || card.images?.small || null,
+        condition: 'NM',
+        game: 'pokemon',
+      }))
+
+      allCards.push(...cards)
+      console.log(`Fetched ${allCards.length} total cards so far`)
+
+      page++
+
+      // Small delay to be respectful to API
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Stop if we've reached requested limit or got all available
+      if (allCards.length >= limit || data.data.length < pageSize) {
+        break
+      }
+    }
+
+    console.log(`Total Pokemon cards fetched: ${allCards.length}`)
+    return allCards.slice(0, limit)
+  } catch (error) {
+    console.error('Error fetching Pokemon cards:', error)
+    return []
+  }
+}

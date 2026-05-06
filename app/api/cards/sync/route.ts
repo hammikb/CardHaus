@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { fetchAllTCGCards } from '@/lib/tcgcsv-api'
-import { fetchJustTCGPokemonCards } from '@/lib/justtcg-api'
+import { fetchAllPokemonCards } from '@/lib/pokemon-tcg-api'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -10,26 +9,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    console.log('Starting card sync from all TCG sources...')
+    console.log('Starting Pokemon card sync from Pokemon TCG API...')
 
-    // Primary source: TCGCSV (all TCGs)
-    let cards = await fetchAllTCGCards()
-    console.log(`Fetched ${cards.length} cards from TCGCSV across all TCGs`)
-
-    // Fallback: JustTCG for Pokémon if TCGCSV returns few
-    if (cards.filter(c => c.game === 'pokemon').length < 500) {
-      console.log('TCGCSV Pokémon returned few cards, fetching from JustTCG...')
-      const justTcgCards = await fetchJustTCGPokemonCards(200)
-
-      // Merge: add JustTCG cards not in TCGCSV
-      const tcgcsNameSet = new Set(cards.map(c => c.name.toLowerCase()))
-      const newCards = justTcgCards.filter(c => !tcgcsNameSet.has(c.name.toLowerCase()))
-      cards = cards.concat(newCards)
-      console.log(`Added ${newCards.length} cards from JustTCG, total: ${cards.length}`)
-    }
+    // Fetch from Pokemon TCG API
+    const cards = await fetchAllPokemonCards(5000)
+    console.log(`Fetched ${cards.length} Pokemon cards from Pokemon TCG API`)
 
     if (cards.length === 0) {
-      return NextResponse.json({ error: 'No cards fetched from any source' }, { status: 400 })
+      return NextResponse.json({ error: 'No cards fetched from Pokemon TCG API' }, { status: 400 })
     }
 
     const supabase = await createClient()
