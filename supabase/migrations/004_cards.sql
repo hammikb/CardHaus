@@ -1,3 +1,6 @@
+-- Enable trigram extension for fuzzy text search
+create extension if not exists pg_trgm;
+
 create table cards (
   id uuid default gen_random_uuid() primary key,
   tcg_player_id text unique not null,
