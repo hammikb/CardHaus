@@ -1,15 +1,28 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import CardAutocomplete from '@/components/card-autocomplete'
 
 const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'other']
 const CONDITIONS = ['poor', 'good', 'excellent', 'near_mint', 'mint', 'graded']
 const GRADE_COMPANIES = ['PSA', 'BGS', 'CGC']
 
+interface Card {
+  id: string
+  tcg_player_id: string
+  name: string
+  set: string
+  image_url: string | null
+  price: number | null
+  rarity: string | null
+  condition: string
+}
+
 export default function NewListingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null)
   const [form, setForm] = useState({
     title: '', description: '', price: '',
     card_type: 'pokemon', condition: 'near_mint',
@@ -18,6 +31,16 @@ export default function NewListingPage() {
 
   function set(field: string, value: string) {
     setForm(f => ({ ...f, [field]: value }))
+  }
+
+  function handleCardSelect(card: Card | null, name: string) {
+    setSelectedCard(card)
+    if (card) {
+      set('title', card.name)
+      if (card.price) set('price', card.price.toString())
+    } else {
+      set('title', name)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -43,6 +66,14 @@ export default function NewListingPage() {
         <p className="text-slate-600">Fill out the details below to get your card listed</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-xl border border-slate-200 p-8">
+        <div>
+          <label className="block text-sm font-bold text-slate-900 mb-2">Search Card Database</label>
+          <CardAutocomplete
+            value={form.title}
+            onChange={handleCardSelect}
+            placeholder="Start typing card name (e.g. Charizard)..."
+          />
+        </div>
         <div>
           <label className="block text-sm font-bold text-slate-900 mb-2">Title *</label>
           <input
