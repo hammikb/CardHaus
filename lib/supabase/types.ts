@@ -49,3 +49,44 @@ export interface Order {
   created_at: string
   listings?: Listing
 }
+
+export interface Auction {
+  id: string
+  listing_id: string
+  start_price: number
+  current_bid: number | null
+  bid_count: number
+  winner_id: string | null
+  ends_at: string
+  created_at: string
+  listings?: Listing
+}
+
+export interface Bid {
+  id: string
+  auction_id: string
+  bidder_id: string
+  amount: number
+  created_at: string
+}
+
+export interface Storefront {
+  id: string
+  vendor_id: string
+  shop_name: string
+  banner_image: string | null
+  description: string | null
+  policies: string | null
+  created_at: string
+}
+
+export interface Review {
+  id: string
+  order_id: string
+  buyer_id: string
+  seller_id: string
+  rating: number
+  body: string | null
+  created_at: string
+  profiles?: Pick<Profile, 'username'>
+}
