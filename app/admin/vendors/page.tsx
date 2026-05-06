@@ -1,4 +1,4 @@
-import { requireAdmin } from '@/lib/utils'
+import { requireAdmin } from '@/lib/auth'
 import VendorActions from './vendor-actions'
 
 export default async function AdminVendorsPage() {

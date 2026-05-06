@@ -11,13 +11,13 @@ export async function POST(request: NextRequest) {
 
   const { data: order } = await supabase
     .from('orders')
-    .select('id, seller_id, status')
+    .select('id, seller_id, status, easypost_shipment_id')
     .eq('id', order_id)
     .eq('seller_id', user.id)
     .single()
 
   if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
-  if (order.easypost_shipment_id) return NextResponse.json({ error: 'Label already generated' }, { status: 400 })
+  if ((order as any).easypost_shipment_id) return NextResponse.json({ error: 'Label already generated' }, { status: 400 })
 
   const shipment = await createShipment({
     toName: to_name, toStreet: to_street, toCity: to_city, toState: to_state, toZip: to_zip,

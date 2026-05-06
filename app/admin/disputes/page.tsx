@@ -1,4 +1,4 @@
-import { requireAdmin } from '@/lib/utils'
+import { requireAdmin } from '@/lib/auth'
 import DisputeActions from './dispute-actions'
 
 export default async function AdminDisputesPage() {
