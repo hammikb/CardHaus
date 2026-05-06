@@ -2,11 +2,12 @@
 > cardhaus@0.1.0 dev
 > next dev
 
+⚠ Port 3000 is in use by process 32732, using available port 3001 instead.
 ▲ Next.js 16.2.4 (Turbopack)
-- Local:         http://localhost:3000
-- Network:       http://192.168.86.248:3000
+- Local:         http://localhost:3001
+- Network:       http://192.168.86.248:3001
 - Environments: .env.local
-✓ Ready in 246ms
+✓ Ready in 274ms
 ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
  We detected multiple lockfiles and selected the directory of C:\Users\kaib1\package-lock.json as the root directory.
  To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
@@ -14,35 +15,12 @@
  Detected additional lockfiles: 
    * C:\Users\kaib1\OneDrive\Desktop\Projects\CardHaus\cardhaus\package-lock.json
 
-⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+⨯ Another next dev server is already running.
 
- GET / 200 in 1912ms (next.js: 1245ms, proxy.ts: 50ms, application-code: 617ms)
- GET /auctions 404 in 210ms (next.js: 184ms, proxy.ts: 4ms, application-code: 22ms)
- GET /auctions 404 in 29ms (next.js: 4ms, proxy.ts: 3ms, application-code: 21ms)
- GET /auth/login 200 in 197ms (next.js: 177ms, proxy.ts: 3ms, application-code: 17ms)
- GET /auth/signup 200 in 199ms (next.js: 179ms, proxy.ts: 3ms, application-code: 17ms)
- GET /api/listings 200 in 565ms (next.js: 243ms, proxy.ts: 2ms, application-code: 320ms)
- GET /marketplace 200 in 743ms (next.js: 151ms, proxy.ts: 3ms, application-code: 588ms)
- GET /auctions 404 in 16ms (next.js: 4ms, proxy.ts: 3ms, application-code: 9ms)
- GET /auctions 404 in 29ms (next.js: 3ms, proxy.ts: 3ms, application-code: 23ms)
- GET /api/listings 200 in 115ms (next.js: 1692µs, proxy.ts: 2ms, application-code: 111ms)
- GET /marketplace 200 in 138ms (next.js: 2ms, proxy.ts: 3ms, application-code: 133ms)
- GET / 200 in 148ms (next.js: 1688µs, proxy.ts: 2ms, application-code: 144ms)
- GET /api/listings 200 in 204ms (next.js: 1944µs, proxy.ts: 2ms, application-code: 200ms)
- GET /marketplace 200 in 232ms (next.js: 3ms, proxy.ts: 3ms, application-code: 226ms)
- GET /auctions 404 in 15ms (next.js: 4ms, proxy.ts: 1969µs, application-code: 9ms)
- GET /auctions 404 in 26ms (next.js: 3ms, proxy.ts: 2ms, application-code: 20ms)
- GET /auth/login 200 in 26ms (next.js: 1832µs, proxy.ts: 1766µs, application-code: 22ms)
-✓ Compiled in 37ms
-✓ Compiled in 34ms
-✓ Compiled in 33ms
-✓ Compiled in 31ms
-✓ Compiled in 28ms
-✓ Compiled in 30ms
-✓ Compiled in 29ms
-✓ Compiled in 45ms
-✓ Compiled in 30ms
-✓ Compiled in 28ms
-✓ Compiled in 37ms
-✓ Compiled in 65ms
-✓ Compiled in 41ms
+- Local:        http://localhost:3000
+- PID:          32732
+- Dir:          C:\Users\kaib1\OneDrive\Desktop\Projects\CardHaus\cardhaus
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 32732 /F to stop it.
+[?25h
