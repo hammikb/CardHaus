@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import SearchDropdown from './search-dropdown'
 
 export default function Nav() {
   const [user, setUser] = useState<{ email?: string } | null>(null)
@@ -26,17 +27,12 @@ export default function Nav() {
           CardHaus
         </Link>
         <div className="flex items-center gap-6">
+          <SearchDropdown />
           <Link href="/marketplace" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
             Marketplace
           </Link>
           <Link href="/auctions" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
             Auctions
-          </Link>
-          <Link href="/graded" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
-            Graded
-          </Link>
-          <Link href="/sealed" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
-            Sealed
           </Link>
           {user ? (
             <>

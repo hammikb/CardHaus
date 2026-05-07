@@ -4,6 +4,7 @@ import { Listing } from '@/lib/supabase/types'
 
 const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'yugioh', 'lorcana', 'one_piece', 'digimon', 'other']
 const CONDITIONS = ['poor', 'good', 'excellent', 'near_mint', 'mint', 'graded']
+const PRODUCT_TYPES = ['single', 'graded', 'sealed']
 
 async function getListings(searchParams: Record<string, string>) {
   const params = new URLSearchParams({
@@ -27,6 +28,24 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
       <div className="flex gap-8">
         <aside className="w-56 shrink-0">
           <div className="bg-white rounded-xl border border-slate-200 p-6 sticky top-20">
+            <h2 className="font-black text-slate-900 mb-4">Product Type</h2>
+            <div className="space-y-2 mb-6">
+              {PRODUCT_TYPES.map(t => (
+                <a
+                  key={t}
+                  href={`/marketplace?product_type=${t}`}
+                  className="block text-sm font-medium capitalize text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                >
+                  {t}
+                </a>
+              ))}
+              <a
+                href="/marketplace"
+                className="block text-sm font-medium text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg transition-colors italic"
+              >
+                Clear all
+              </a>
+            </div>
             <h2 className="font-black text-slate-900 mb-4">Card Type</h2>
             <div className="space-y-2 mb-6">
               {CARD_TYPES.map(t => (
