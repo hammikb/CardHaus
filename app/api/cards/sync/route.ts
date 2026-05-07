@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     // Batch syncing to stay under 60s Vercel timeout
     // Each batch: ~1500 cards ≈ 50s
     const batchSize = 1500
-    const batches = [1, 7, 13] // page numbers for batches (pages 1-6, 7-12, 13+)
+    const batches = [1, 7, 13, 19] // page numbers for batches (pages 1-6, 7-12, 13-18, 19+)
 
     let totalSynced = 0
 
