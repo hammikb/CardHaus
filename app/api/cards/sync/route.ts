@@ -11,40 +11,51 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Starting Pokemon card sync from Pokemon TCG API...')
 
-    // Fetch from Pokemon TCG API (1000 limit for Vercel timeout)
-    const cards = await fetchAllPokemonCards(1000)
-    console.log(`Fetched ${cards.length} Pokemon cards from Pokemon TCG API`)
+    // Batch syncing to stay under 60s Vercel timeout
+    // Each batch: ~1500 cards ≈ 50s
+    const batchSize = 1500
+    const batches = [1, 7, 13] // page numbers for batches (pages 1-6, 7-12, 13+)
 
-    if (cards.length === 0) {
-      return NextResponse.json({ error: 'No cards fetched from Pokemon TCG API' }, { status: 400 })
+    let totalSynced = 0
+
+    for (const startPage of batches) {
+      console.log(`Syncing batch starting at page ${startPage}...`)
+      const cards = await fetchAllPokemonCards(batchSize, startPage)
+
+      if (cards.length === 0) {
+        console.log(`Batch from page ${startPage} returned no cards, stopping`)
+        break
+      }
+
+      const supabase = await createServiceClient()
+      const { error } = await supabase.from('cards').upsert(
+        cards.map(c => ({
+          tcg_player_id: c.tcgPlayerId,
+          name: c.name,
+          set: c.set,
+          price: c.price,
+          rarity: c.rarity,
+          image_url: c.imageUrl,
+          condition: c.condition,
+          game: c.game,
+          synced_at: new Date().toISOString(),
+        })),
+        { onConflict: 'tcg_player_id' }
+      )
+
+      if (error) {
+        console.error(`Batch error at page ${startPage}:`, error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+
+      totalSynced += cards.length
+      console.log(`Batch synced ${cards.length} cards (total: ${totalSynced})`)
     }
 
-    const supabase = await createServiceClient()
-
-    const { error } = await supabase.from('cards').upsert(
-      cards.map(c => ({
-        tcg_player_id: c.tcgPlayerId,
-        name: c.name,
-        set: c.set,
-        price: c.price,
-        rarity: c.rarity,
-        image_url: c.imageUrl,
-        condition: c.condition,
-        game: c.game,
-        synced_at: new Date().toISOString(),
-      })),
-      { onConflict: 'tcg_player_id' }
-    )
-
-    if (error) {
-      console.error('Supabase upsert error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    console.log(`Successfully synced ${cards.length} cards`)
+    console.log(`Successfully synced ${totalSynced} cards total`)
     return NextResponse.json({
       success: true,
-      count: cards.length,
+      count: totalSynced,
       synced_at: new Date().toISOString(),
     })
   } catch (error) {

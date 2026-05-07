@@ -81,11 +81,11 @@ export async function searchPokemonCards(query: string): Promise<CardData[]> {
   }
 }
 
-export async function fetchAllPokemonCards(limit: number = 5000): Promise<CardData[]> {
+export async function fetchAllPokemonCards(limit: number = 5000, startPage: number = 1): Promise<CardData[]> {
   try {
-    console.log('Fetching all Pokemon cards from Pokemon TCG API...')
+    console.log(`Fetching Pokemon cards from page ${startPage}...`)
     const allCards: CardData[] = []
-    let page = 1
+    let page = startPage
     const pageSize = 250
 
     while (allCards.length < limit) {
@@ -102,6 +102,10 @@ export async function fetchAllPokemonCards(limit: number = 5000): Promise<CardDa
       }
 
       const data: PokemonTCGResponse = await response.json()
+
+      if (page === 1) {
+        console.log(`Total Pokemon cards available: ${data.totalCount}`)
+      }
 
       if (!data.data || data.data.length === 0) {
         console.log('No more cards available')
