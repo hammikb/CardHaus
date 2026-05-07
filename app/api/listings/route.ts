@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   if (productType) query = query.eq('product_type', productType)
   if (minPrice) query = query.gte('price', Number(minPrice))
   if (maxPrice) query = query.lte('price', Number(maxPrice))
-  if (q) query = query.textSearch('title', q)
+  if (q) query = query.ilike('title', q)
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
