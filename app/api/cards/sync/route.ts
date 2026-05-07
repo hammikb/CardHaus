@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { fetchAllPokemonCards } from '@/lib/pokemon-tcg-api'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No cards fetched from Pokemon TCG API' }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    const supabase = await createServiceClient()
 
     const { error } = await supabase.from('cards').upsert(
       cards.map(c => ({
