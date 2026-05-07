@@ -20,3 +20,10 @@ ALTER TABLE cards ADD COLUMN IF NOT EXISTS game text NOT NULL DEFAULT 'pokemon';
 -- Create index for product_type filtering
 CREATE INDEX IF NOT EXISTS idx_listings_product_type ON listings(product_type);
 CREATE INDEX IF NOT EXISTS idx_listings_game ON listings(card_type, product_type);
+
+-- Enable RLS on cards table and add public read policy
+ALTER TABLE cards ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Cards are publicly readable" ON cards;
+DROP POLICY IF EXISTS "Service can insert cards" ON cards;
+CREATE POLICY "Cards are publicly readable" ON cards FOR SELECT USING (true);
+CREATE POLICY "Service can insert cards" ON cards FOR INSERT WITH CHECK (true);
