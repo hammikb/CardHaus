@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CardAutocomplete from '@/components/card-autocomplete'
+import PhotoUpload from '@/components/photo-upload'
 
 const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'yugioh', 'lorcana', 'one_piece', 'digimon', 'other']
 const CONDITIONS = ['poor', 'good', 'excellent', 'near_mint', 'mint', 'graded']
@@ -24,6 +25,7 @@ export default function NewSingleListingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
+  const [images, setImages] = useState<string[]>([])
   const [form, setForm] = useState({
     title: '', description: '', price: '',
     card_type: 'pokemon', condition: 'near_mint',
@@ -46,6 +48,10 @@ export default function NewSingleListingPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (images.length === 0) {
+      setError('At least one photo is required')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -55,7 +61,7 @@ export default function NewSingleListingPage() {
       body: JSON.stringify({
         ...form,
         price: Number(form.price),
-        images: [],
+        images,
         product_type: 'single',
       }),
     })
@@ -103,6 +109,7 @@ export default function NewSingleListingPage() {
             className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
           />
         </div>
+        <PhotoUpload value={images} onChange={setImages} />
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-bold text-slate-900 mb-2">Price (USD) *</label>

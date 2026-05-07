@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CardAutocomplete from '@/components/card-autocomplete'
+import PhotoUpload from '@/components/photo-upload'
 
 const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'yugioh', 'lorcana', 'one_piece', 'digimon', 'other']
 
@@ -23,6 +24,7 @@ export default function NewAuctionPage() {
   const [error, setError] = useState('')
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
   const [cardSearchValue, setCardSearchValue] = useState('')
+  const [images, setImages] = useState<string[]>([])
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -48,6 +50,10 @@ export default function NewAuctionPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (images.length === 0) {
+      setError('At least one photo is required')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -65,7 +71,7 @@ export default function NewAuctionPage() {
         price: Number(form.start_price),
         start_price: Number(form.start_price),
         ends_at: endsAt.toISOString(),
-        images: [],
+        images,
         product_type: 'auction',
       }),
     })
@@ -166,6 +172,8 @@ export default function NewAuctionPage() {
             rows={4}
           />
         </div>
+
+        <PhotoUpload value={images} onChange={setImages} />
 
         {error && <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
 

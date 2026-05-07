@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CardAutocomplete from '@/components/card-autocomplete'
+import PhotoUpload from '@/components/photo-upload'
 
 const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'yugioh', 'lorcana', 'one_piece', 'digimon', 'other']
 const GRADE_COMPANIES = ['PSA', 'BGS', 'CGC', 'SGC']
@@ -23,6 +24,7 @@ export default function NewGradedListingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
+  const [images, setImages] = useState<string[]>([])
   const [form, setForm] = useState({
     title: '', description: '', price: '',
     card_type: 'pokemon', grade_company: 'PSA', grade: '',
@@ -49,6 +51,10 @@ export default function NewGradedListingPage() {
       setError('Grade is required')
       return
     }
+    if (images.length === 0) {
+      setError('At least one photo is required')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -63,7 +69,7 @@ export default function NewGradedListingPage() {
         condition: 'graded',
         grade_company: form.grade_company,
         grade: form.grade,
-        images: [],
+        images,
         product_type: 'graded',
       }),
     })
@@ -180,6 +186,7 @@ export default function NewGradedListingPage() {
             className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
           />
         </div>
+        <PhotoUpload value={images} onChange={setImages} />
         {error && <p className="text-red-600 text-sm font-medium bg-red-50 px-4 py-2 rounded-lg">{error}</p>}
         <button
           type="submit"
