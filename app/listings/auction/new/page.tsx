@@ -22,6 +22,7 @@ export default function NewAuctionPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
+  const [cardSearchValue, setCardSearchValue] = useState('')
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -37,6 +38,7 @@ export default function NewAuctionPage() {
 
   function handleCardSelect(card: Card | null, name: string) {
     setSelectedCard(card)
+    setCardSearchValue(card ? card.name : name)
     if (card) {
       set('title', card.name)
     } else {
@@ -86,7 +88,7 @@ export default function NewAuctionPage() {
       <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-xl border border-slate-200 p-8">
         <div>
           <label className="block text-sm font-bold text-slate-900 mb-2">Search Card Database</label>
-          <CardAutocomplete onSelect={handleCardSelect} />
+          <CardAutocomplete value={cardSearchValue} onChange={handleCardSelect} />
         </div>
 
         <div>
