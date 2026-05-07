@@ -41,14 +41,17 @@ export async function POST(request: NextRequest) {
       }))
 
       console.log(`Upserting ${cardsToInsert.length} cards to database...`)
-      const { error, count } = await supabase.from('cards').upsert(cardsToInsert, { onConflict: 'tcg_player_id' })
+      console.log(`Sample card: ${JSON.stringify(cardsToInsert[0])}`)
+
+      const response = await supabase.from('cards').upsert(cardsToInsert, { onConflict: 'tcg_player_id' })
+      const { error, data, status } = response
+
+      console.log(`Upsert response: status=${status}, error=${error?.message || 'none'}, data=${data ? 'returned' : 'null'}`)
 
       if (error) {
         console.error(`Batch error at page ${currentPage}: ${JSON.stringify(error)}`)
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
-
-      console.log(`Upsert complete. Count: ${count}`)
 
       totalSynced += cards.length
       console.log(`Batch synced ${cards.length} cards (total: ${totalSynced})`)
