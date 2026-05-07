@@ -14,11 +14,8 @@ export default async function AuctionsPage() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold">Auctions</h1>
-        <Link href="/auctions/new" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">
-          + Create Auction
-        </Link>
       </div>
       {auctions && auctions.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

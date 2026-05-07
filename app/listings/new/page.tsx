@@ -23,6 +23,13 @@ const PRODUCT_TYPES = [
     icon: '📦',
     href: '/listings/sealed/new',
   },
+  {
+    type: 'auction',
+    title: 'Auction',
+    description: 'Start a bidding auction for trading cards',
+    icon: '🔨',
+    href: '/listings/auction/new',
+  },
 ]
 
 export default function ListingTypePage() {
