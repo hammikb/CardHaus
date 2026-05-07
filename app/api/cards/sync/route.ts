@@ -28,25 +28,27 @@ export async function POST(request: NextRequest) {
       }
 
       const supabase = await createServiceClient()
-      const { error } = await supabase.from('cards').upsert(
-        cards.map(c => ({
-          tcg_player_id: c.tcgPlayerId,
-          name: c.name,
-          set: c.set,
-          price: c.price,
-          rarity: c.rarity,
-          image_url: c.imageUrl,
-          condition: c.condition,
-          game: c.game,
-          synced_at: new Date().toISOString(),
-        })),
-        { onConflict: 'tcg_player_id' }
-      )
+      const cardsToInsert = cards.map(c => ({
+        tcg_player_id: c.tcgPlayerId,
+        name: c.name,
+        set: c.set,
+        price: c.price,
+        rarity: c.rarity,
+        image_url: c.imageUrl,
+        condition: c.condition,
+        game: c.game,
+        synced_at: new Date().toISOString(),
+      }))
+
+      console.log(`Upserting ${cardsToInsert.length} cards to database...`)
+      const { error, count } = await supabase.from('cards').upsert(cardsToInsert, { onConflict: 'tcg_player_id' })
 
       if (error) {
-        console.error(`Batch error at page ${currentPage}:`, error)
+        console.error(`Batch error at page ${currentPage}: ${JSON.stringify(error)}`)
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
+
+      console.log(`Upsert complete. Count: ${count}`)
 
       totalSynced += cards.length
       console.log(`Batch synced ${cards.length} cards (total: ${totalSynced})`)
