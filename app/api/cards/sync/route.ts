@@ -14,16 +14,16 @@ export async function POST(request: NextRequest) {
     // Batch syncing to stay under 60s Vercel timeout
     // Each batch: ~1500 cards ≈ 50s
     const batchSize = 1500
-    const batches = [1, 7, 13, 19] // page numbers for batches (pages 1-6, 7-12, 13-18, 19+)
-
     let totalSynced = 0
+    let currentPage = 1
 
-    for (const startPage of batches) {
-      console.log(`Syncing batch starting at page ${startPage}...`)
-      const cards = await fetchAllPokemonCards(batchSize, startPage)
+    // Keep syncing batches until API returns no cards
+    while (true) {
+      console.log(`Syncing batch starting at page ${currentPage}...`)
+      const cards = await fetchAllPokemonCards(batchSize, currentPage)
 
       if (cards.length === 0) {
-        console.log(`Batch from page ${startPage} returned no cards, stopping`)
+        console.log(`Reached end of API (page ${currentPage}), stopping`)
         break
       }
 
@@ -44,12 +44,15 @@ export async function POST(request: NextRequest) {
       )
 
       if (error) {
-        console.error(`Batch error at page ${startPage}:`, error)
+        console.error(`Batch error at page ${currentPage}:`, error)
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
 
       totalSynced += cards.length
       console.log(`Batch synced ${cards.length} cards (total: ${totalSynced})`)
+
+      // Move to next batch starting page
+      currentPage += Math.ceil(batchSize / 250)
     }
 
     console.log(`Successfully synced ${totalSynced} cards total`)
