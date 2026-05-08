@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { uploadListingImage } from '@/lib/supabase/storage'
 
 interface PhotoUploadProps {
   value: string[]
@@ -8,78 +9,94 @@ interface PhotoUploadProps {
 }
 
 export default function PhotoUpload({ value, onChange, maxFiles = 5 }: PhotoUploadProps) {
-  const [isDragging, setIsDragging] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
 
-  function handleFiles(files: FileList) {
-    const newFiles = Array.from(files).filter(f => f.type.startsWith('image/'))
-    if (newFiles.length === 0) return
+  async function handleFiles(files: FileList) {
+    if (files.length + value.length > maxFiles) {
+      setError(`Max ${maxFiles} files allowed`)
+      return
+    }
 
-    const remaining = maxFiles - value.length
-    const toAdd = newFiles.slice(0, remaining)
+    setUploading(true)
+    setError('')
 
-    toAdd.forEach(file => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          onChange([...value, e.target.result as string])
+    try {
+      const newUrls: string[] = []
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) {
+          continue
         }
+        const url = await uploadListingImage(file)
+        newUrls.push(url)
       }
-      reader.readAsDataURL(file)
-    })
+      onChange([...value, ...newUrls])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed')
+    } finally {
+      setUploading(false)
+    }
   }
 
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(false)
-    handleFiles(e.dataTransfer.files)
-  }
-
-  function handleRemove(index: number) {
+  function removeImage(index: number) {
     onChange(value.filter((_, i) => i !== index))
   }
 
   return (
-    <div>
-      <label className="block text-sm font-bold text-slate-900 mb-2">
-        Photos * ({value.length}/{maxFiles})
-      </label>
-
+    <div className="space-y-4">
       <div
-        onDrop={handleDrop}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-        onDragLeave={() => setIsDragging(false)}
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          isDragging
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-slate-300 bg-slate-50'
-        } ${value.length >= maxFiles ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 transition-colors"
+        onDragOver={(e) => {
+          e.preventDefault()
+          e.currentTarget.classList.add('border-blue-400')
+        }}
+        onDragLeave={(e) => e.currentTarget.classList.remove('border-blue-400')}
+        onDrop={(e) => {
+          e.preventDefault()
+          e.currentTarget.classList.remove('border-blue-400')
+          handleFiles(e.dataTransfer.files)
+        }}
+        onClick={() => document.getElementById('file-input')?.click()}
       >
         <input
+          id="file-input"
           type="file"
           multiple
           accept="image/*"
-          onChange={(e) => handleFiles(e.currentTarget.files!)}
           className="hidden"
-          id="photo-input"
-          disabled={value.length >= maxFiles}
+          onChange={(e) => e.target.files && handleFiles(e.target.files)}
+          disabled={uploading}
         />
-        <label htmlFor="photo-input" className="cursor-pointer block">
-          <p className="text-slate-600 font-medium">Drag photos here or click to select</p>
-          <p className="text-sm text-slate-500 mt-1">JPG, PNG, WebP up to 5 images</p>
-        </label>
+        <p className="text-slate-600 font-medium">
+          {uploading ? 'Uploading...' : 'Drag photos here or click to select'}
+        </p>
+        <p className="text-slate-400 text-sm mt-1">Max {maxFiles} images</p>
       </div>
 
+      {error && (
+        <div className="text-red-600 text-sm bg-red-50 px-4 py-2 rounded-lg">
+          {error}
+        </div>
+      )}
+
       {value.length > 0 && (
-        <div className="grid grid-cols-3 gap-3 mt-4">
-          {value.map((img, idx) => (
-            <div key={idx} className="relative">
-              <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-24 object-cover rounded-lg border border-slate-200" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {value.map((url, i) => (
+            <div
+              key={i}
+              className="relative aspect-square rounded-lg overflow-hidden bg-slate-100"
+            >
+              <img
+                src={url}
+                alt={`Photo ${i + 1}`}
+                className="w-full h-full object-cover"
+              />
               <button
-                type="button"
-                onClick={() => handleRemove(idx)}
-                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                onClick={() => removeImage(i)}
+                className="absolute top-1 right-1 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
+                disabled={uploading}
               >
-                ✕
+                Remove
               </button>
             </div>
           ))}
