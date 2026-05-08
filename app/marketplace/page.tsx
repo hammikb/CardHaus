@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import ListingCard from '@/components/listing-card'
 import EmptyState from '@/components/empty-state'
+import { SkeletonGrid } from '@/components/skeleton-card'
 import { Listing } from '@/lib/supabase/types'
 
 const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'yugioh', 'lorcana', 'one_piece', 'digimon', 'other']
@@ -88,9 +90,11 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
               icon="📭"
             />
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-              {listings.map(l => <ListingCard key={l.id} listing={l} />)}
-            </div>
+            <Suspense fallback={<SkeletonGrid count={12} />}>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                {listings.map(l => <ListingCard key={l.id} listing={l} />)}
+              </div>
+            </Suspense>
           )}
         </div>
       </div>
