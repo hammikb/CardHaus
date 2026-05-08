@@ -3,7 +3,10 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/nav'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'CardHaus — Buy & Sell Trading Cards',
