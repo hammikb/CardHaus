@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Listing } from '@/lib/supabase/types'
+import { debounce } from '@/lib/utils/debounce'
 
 export default function SearchDropdown() {
   const [query, setQuery] = useState('')
@@ -12,17 +13,17 @@ export default function SearchDropdown() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    if (!query.trim()) {
-      setResults([])
-      setIsOpen(false)
-      return
-    }
+  const debouncedSearch = useRef(
+    debounce(async (searchQuery: string) => {
+      if (!searchQuery.trim()) {
+        setResults([])
+        setIsOpen(false)
+        return
+      }
 
-    const timer = setTimeout(async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/listings?q=${encodeURIComponent(query)}&limit=8`)
+        const res = await fetch(`/api/listings?q=${encodeURIComponent(searchQuery)}&limit=8`)
         const data = await res.json()
         setResults(data.slice(0, 8))
         setIsOpen(true)
@@ -32,8 +33,10 @@ export default function SearchDropdown() {
         setIsLoading(false)
       }
     }, 300)
+  ).current
 
-    return () => clearTimeout(timer)
+  useEffect(() => {
+    debouncedSearch(query)
   }, [query])
 
   function handleSearch(e: React.FormEvent) {
