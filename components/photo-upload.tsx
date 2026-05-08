@@ -23,14 +23,27 @@ export default function PhotoUpload({ value, onChange, maxFiles = 5 }: PhotoUplo
 
     try {
       const newUrls: string[] = []
+      const errors: string[] = []
+
       for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) {
           continue
         }
-        const url = await uploadListingImage(file)
-        newUrls.push(url)
+        try {
+          const url = await uploadListingImage(file)
+          newUrls.push(url)
+        } catch (err) {
+          errors.push(err instanceof Error ? err.message : 'Upload failed')
+        }
       }
-      onChange([...value, ...newUrls])
+
+      if (newUrls.length > 0) {
+        onChange([...value, ...newUrls])
+      }
+
+      if (errors.length > 0) {
+        setError(`Uploaded ${newUrls.length} files. ${errors.length} failed: ${errors.join('; ')}`)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed')
     } finally {
@@ -42,10 +55,20 @@ export default function PhotoUpload({ value, onChange, maxFiles = 5 }: PhotoUplo
     onChange(value.filter((_, i) => i !== index))
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      document.getElementById('file-input')?.click()
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div
-        className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 transition-colors"
+        className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+        role="button"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
         onDragOver={(e) => {
           e.preventDefault()
           e.currentTarget.classList.add('border-blue-400')
@@ -57,6 +80,7 @@ export default function PhotoUpload({ value, onChange, maxFiles = 5 }: PhotoUplo
           handleFiles(e.dataTransfer.files)
         }}
         onClick={() => document.getElementById('file-input')?.click()}
+        aria-label="Upload images - drag and drop or click to select"
       >
         <input
           id="file-input"
@@ -81,20 +105,21 @@ export default function PhotoUpload({ value, onChange, maxFiles = 5 }: PhotoUplo
 
       {value.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {value.map((url, i) => (
+          {value.map((url) => (
             <div
-              key={i}
+              key={url}
               className="relative aspect-square rounded-lg overflow-hidden bg-slate-100"
             >
               <img
                 src={url}
-                alt={`Photo ${i + 1}`}
+                alt="Uploaded photo"
                 className="w-full h-full object-cover"
               />
               <button
-                onClick={() => removeImage(i)}
+                onClick={() => removeImage(value.indexOf(url))}
                 className="absolute top-1 right-1 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
                 disabled={uploading}
+                aria-label="Remove photo"
               >
                 Remove
               </button>
