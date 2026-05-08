@@ -21,7 +21,7 @@ async function getListings(searchParams: Record<string, string>) {
   return res.json() as Promise<Listing[]>
 }
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [listings, setListings] = useState<Listing[]>([])
@@ -144,5 +144,13 @@ export default function MarketplacePage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={<SkeletonGrid count={12} />}>
+      <MarketplaceContent />
+    </Suspense>
   )
 }
