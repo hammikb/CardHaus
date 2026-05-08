@@ -1,8 +1,12 @@
-import { Suspense } from 'react'
+'use client'
+
+import { Suspense, useRef, useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import ListingCard from '@/components/listing-card'
 import EmptyState from '@/components/empty-state'
 import { SkeletonGrid } from '@/components/skeleton-card'
 import { Listing } from '@/lib/supabase/types'
+import { debounce } from '@/lib/utils/debounce'
 
 const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'yugioh', 'lorcana', 'one_piece', 'digimon', 'other']
 const CONDITIONS = ['poor', 'good', 'excellent', 'near_mint', 'mint', 'graded']
@@ -17,9 +21,54 @@ async function getListings(searchParams: Record<string, string>) {
   return res.json() as Promise<Listing[]>
 }
 
-export default async function MarketplacePage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
-  const params = await searchParams
-  const listings = await getListings(params)
+export default function MarketplacePage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [listings, setListings] = useState<Listing[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState<Record<string, string>>({
+    product_type: searchParams.get('product_type') || 'single',
+    card_type: searchParams.get('card_type') || '',
+    condition: searchParams.get('condition') || '',
+  })
+
+  // Create debounced filter handler
+  const debouncedSetFilter = useRef(
+    debounce((filterName: string, value: string) => {
+      setFilters(f => ({ ...f, [filterName]: value }))
+    }, 100)
+  ).current
+
+  // Update URL and fetch listings when filters change
+  useEffect(() => {
+    const loadListings = async () => {
+      setLoading(true)
+      const params = Object.entries(filters)
+        .filter(([_, v]) => v)
+        .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
+
+      const searchString = new URLSearchParams(params).toString()
+      router.push(`/marketplace${searchString ? `?${searchString}` : ''}`)
+
+      const data = await getListings(params)
+      setListings(data)
+      setLoading(false)
+    }
+
+    loadListings()
+  }, [filters, router])
+
+  const handleFilterClick = (filterName: string, value: string) => {
+    debouncedSetFilter(filterName, value)
+  }
+
+  const handleClearFilters = () => {
+    setFilters({
+      product_type: 'single',
+      card_type: '',
+      condition: '',
+    })
+  }
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-12">
@@ -33,55 +82,53 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
             <h2 className="font-black text-slate-900 mb-4">Product Type</h2>
             <div className="space-y-2 mb-6">
               {PRODUCT_TYPES.map(t => (
-                <a
+                <button
                   key={t}
-                  href={`/marketplace?product_type=${t}`}
-                  className="block text-sm font-medium capitalize text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                  onClick={() => handleFilterClick('product_type', t)}
+                  className="w-full text-left text-sm font-medium capitalize text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
                 >
                   {t}
-                </a>
+                </button>
               ))}
-              <a
-                href="/marketplace"
-                className="block text-sm font-medium text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg transition-colors italic"
+              <button
+                onClick={handleClearFilters}
+                className="w-full text-left text-sm font-medium text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg transition-colors italic"
               >
                 Clear all
-              </a>
+              </button>
             </div>
             <h2 className="font-black text-slate-900 mb-4">Card Type</h2>
             <div className="space-y-2 mb-6">
               {CARD_TYPES.map(t => (
-                <a
+                <button
                   key={t}
-                  href={`/marketplace?card_type=${t}`}
-                  className="block text-sm font-medium capitalize text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                  onClick={() => handleFilterClick('card_type', t)}
+                  className="w-full text-left text-sm font-medium capitalize text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
                 >
                   {t}
-                </a>
+                </button>
               ))}
-              <a
-                href="/marketplace"
-                className="block text-sm font-medium text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg transition-colors italic"
-              >
-                Clear all
-              </a>
             </div>
             <h2 className="font-black text-slate-900 mb-4">Condition</h2>
             <div className="space-y-2">
               {CONDITIONS.map(c => (
-                <a
+                <button
                   key={c}
-                  href={`/marketplace?condition=${c}`}
-                  className="block text-sm font-medium capitalize text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                  onClick={() => handleFilterClick('condition', c)}
+                  className="w-full text-left text-sm font-medium capitalize text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
                 >
                   {c.replace('_', ' ')}
-                </a>
+                </button>
               ))}
             </div>
           </div>
         </aside>
         <div className="flex-1">
-          {listings.length === 0 ? (
+          {loading ? (
+            <Suspense fallback={<SkeletonGrid count={12} />}>
+              <SkeletonGrid count={12} />
+            </Suspense>
+          ) : listings.length === 0 ? (
             <EmptyState
               title="No listings yet"
               description="Start selling your first card to see it appear here. Explore existing listings or list your first card."
@@ -90,11 +137,9 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
               icon="📭"
             />
           ) : (
-            <Suspense fallback={<SkeletonGrid count={12} />}>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                {listings.map(l => <ListingCard key={l.id} listing={l} />)}
-              </div>
-            </Suspense>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+              {listings.map(l => <ListingCard key={l.id} listing={l} />)}
+            </div>
           )}
         </div>
       </div>
