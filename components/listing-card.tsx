@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Listing } from '@/lib/supabase/types'
 import { formatCurrency } from '@/lib/utils'
 
@@ -10,10 +11,14 @@ export default function ListingCard({ listing }: { listing: Listing & { profiles
     >
       <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden relative">
         {listing.images[0] ? (
-          <img
+          <Image
             src={listing.images[0]}
             alt={listing.title}
+            width={240}
+            height={240}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            loading="lazy"
+            priority={false}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">No image</div>
