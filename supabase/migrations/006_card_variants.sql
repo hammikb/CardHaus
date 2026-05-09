@@ -24,10 +24,10 @@ CREATE TABLE IF NOT EXISTS card_variants (
   rarity TEXT,
   image_url TEXT,
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  CONSTRAINT unique_variant UNIQUE (card_id, set_id, language, COALESCE(edition, ''))
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_card_variants_unique ON card_variants(card_id, set_id, language, COALESCE(edition, ''));
 CREATE INDEX IF NOT EXISTS idx_card_variants_card_id ON card_variants(card_id);
 CREATE INDEX IF NOT EXISTS idx_card_variants_set_id ON card_variants(set_id);
 
