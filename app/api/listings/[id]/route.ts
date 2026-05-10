@@ -1,35 +1,93 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { supabaseServiceRole } from "@/lib/supabase";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const listingId = parseInt(params.id);
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Must be authenticated" },
+        { status: 401 }
+      );
+    }
 
-  const { data, error } = await supabase
-    .from('listings')
-    .select('*, profiles(username, verified_vendor, stripe_onboarded)')
-    .eq('id', id)
-    .single()
+    const body = await request.json();
 
-  if (error || !data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  return NextResponse.json(data)
+    const { data: listing } = await supabaseServiceRole
+      .from("listings")
+      .select("seller_id")
+      .eq("id", listingId)
+      .single();
+
+    if (!listing || listing.seller_id !== userId) {
+      return NextResponse.json(
+        { error: "Not authorized" },
+        { status: 403 }
+      );
+    }
+
+    const { data, error } = await supabaseServiceRole
+      .from("listings")
+      .update(body)
+      .eq("id", listingId)
+      .select();
+
+    if (error) throw error;
+
+    return NextResponse.json(data[0]);
+  } catch (error) {
+    console.error("Update listing error:", error);
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    );
+  }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const listingId = parseInt(params.id);
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Must be authenticated" },
+        { status: 401 }
+      );
+    }
 
-  const body = await request.json()
-  const { data, error } = await supabase
-    .from('listings')
-    .update(body)
-    .eq('id', id)
-    .eq('seller_id', user.id)
-    .select()
-    .single()
+    const { data: listing } = await supabaseServiceRole
+      .from("listings")
+      .select("seller_id")
+      .eq("id", listingId)
+      .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+    if (!listing || listing.seller_id !== userId) {
+      return NextResponse.json(
+        { error: "Not authorized" },
+        { status: 403 }
+      );
+    }
+
+    const { error } = await supabaseServiceRole
+      .from("listings")
+      .delete()
+      .eq("id", listingId);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Delete listing error:", error);
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    );
+  }
 }
