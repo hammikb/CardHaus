@@ -28,23 +28,45 @@ export async function POST(request: NextRequest) {
       }
 
       const supabase = await createServiceClient()
+
+      // Insert/update cards
       const cardsToInsert = cards.map(c => ({
-        tcg_player_id: c.tcgPlayerId,
+        tcgcsv_id: c.tcgPlayerId_numeric,
         name: c.name,
-        set: c.set,
-        price: c.price,
-        rarity: c.rarity,
-        image_url: c.imageUrl,
-        condition: c.condition,
         game: c.game,
-        synced_at: new Date().toISOString(),
+        image_url: c.imageUrl,
       }))
 
-      const { error } = await supabase.from('cards').upsert(cardsToInsert, { onConflict: 'tcg_player_id' }).select()
+      const { data: insertedCards, error: cardError } = await supabase
+        .from('cards')
+        .upsert(cardsToInsert, { onConflict: 'tcgcsv_id' })
+        .select('id, tcgcsv_id')
 
-      if (error) {
-        console.error(`Batch error at page ${currentPage}: ${JSON.stringify(error)}`)
-        return NextResponse.json({ error: error.message }, { status: 500 })
+      if (cardError) {
+        console.error(`Card insert error at page ${currentPage}: ${JSON.stringify(cardError)}`)
+        return NextResponse.json({ error: cardError.message }, { status: 500 })
+      }
+
+      // Map inserted cards back to variants for insertion
+      const cardIdMap = new Map(insertedCards.map((c: any) => [c.tcgcsv_id, c.id]))
+      const variantsToInsert = cards.map(c => ({
+        card_id: cardIdMap.get(c.tcgPlayerId_numeric),
+        set_id: c.setId,
+        set_name: c.set,
+        language: 'English',
+        rarity: c.rarity,
+        image_url: c.imageUrl,
+      }))
+
+      // Insert variants (ignore conflicts if already exists)
+      const { error: variantError } = await supabase
+        .from('card_variants')
+        .insert(variantsToInsert)
+
+      // Variants might already exist - that's OK, just log it
+      if (variantError && !variantError.message.includes('duplicate')) {
+        console.error(`Variant insert error at page ${currentPage}: ${JSON.stringify(variantError)}`)
+        return NextResponse.json({ error: variantError.message }, { status: 500 })
       }
 
       totalSynced += cards.length

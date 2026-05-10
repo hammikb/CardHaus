@@ -1,7 +1,9 @@
 export interface CardData {
   tcgPlayerId: string
+  tcgPlayerId_numeric: number
   name: string
   set: string
+  setId: string
   price: number | null
   rarity: string | null
   imageUrl: string | null
@@ -67,8 +69,10 @@ export async function searchPokemonCards(query: string): Promise<CardData[]> {
     const data: PokemonTCGResponse = await response.json()
     return data.data.map((card: PokemonTCGCard) => ({
       tcgPlayerId: `pokemon_${card.id}`,
+      tcgPlayerId_numeric: parseInt(card.id, 10),
       name: card.name,
       set: card.set?.name || 'Unknown',
+      setId: card.set?.id || 'unknown',
       price: card.cardmarket?.prices?.trendPrice || null,
       rarity: card.rarity || null,
       imageUrl: card.images?.large || card.images?.small || null,
@@ -114,8 +118,10 @@ export async function fetchAllPokemonCards(limit: number = 5000, startPage: numb
 
       const cards = data.data.map((card: PokemonTCGCard) => ({
         tcgPlayerId: `pokemon_${card.id}`,
+        tcgPlayerId_numeric: parseInt(card.id, 10),
         name: card.name,
         set: card.set?.name || 'Unknown',
+        setId: card.set?.id || 'unknown',
         price: card.cardmarket?.prices?.trendPrice || null,
         rarity: card.rarity || null,
         imageUrl: card.images?.large || card.images?.small || null,
