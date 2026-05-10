@@ -29,13 +29,15 @@ export async function POST(request: NextRequest) {
 
       const supabase = await createServiceClient()
 
-      // Insert/update cards
-      const cardsToInsert = cards.map(c => ({
-        tcgcsv_id: c.tcgPlayerId_numeric,
-        name: c.name,
-        game: c.game,
-        image_url: c.imageUrl,
-      }))
+      // Insert/update cards (filter out invalid tcgcsv_id)
+      const cardsToInsert = cards
+        .filter(c => !isNaN(c.tcgPlayerId_numeric))
+        .map(c => ({
+          tcgcsv_id: c.tcgPlayerId_numeric,
+          name: c.name,
+          game: c.game,
+          image_url: c.imageUrl,
+        }))
 
       const { error: cardError } = await supabase
         .from('cards')

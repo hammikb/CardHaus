@@ -67,18 +67,27 @@ export async function searchPokemonCards(query: string): Promise<CardData[]> {
     }
 
     const data: PokemonTCGResponse = await response.json()
-    return data.data.map((card: PokemonTCGCard) => ({
-      tcgPlayerId: `pokemon_${card.id}`,
-      tcgPlayerId_numeric: parseInt(card.id, 10),
-      name: card.name,
-      set: card.set?.name || 'Unknown',
-      setId: card.set?.id || 'unknown',
-      price: card.cardmarket?.prices?.trendPrice || null,
-      rarity: card.rarity || null,
-      imageUrl: card.images?.large || card.images?.small || null,
-      condition: 'NM',
-      game: 'pokemon',
-    }))
+    return data.data
+      .filter((card: PokemonTCGCard) => {
+        const numeric = parseInt(card.id, 10)
+        if (isNaN(numeric)) {
+          console.warn(`Skipping card with non-numeric ID: ${card.id}`)
+          return false
+        }
+        return true
+      })
+      .map((card: PokemonTCGCard) => ({
+        tcgPlayerId: `pokemon_${card.id}`,
+        tcgPlayerId_numeric: parseInt(card.id, 10),
+        name: card.name,
+        set: card.set?.name || 'Unknown',
+        setId: card.set?.id || 'unknown',
+        price: card.cardmarket?.prices?.trendPrice || null,
+        rarity: card.rarity || null,
+        imageUrl: card.images?.large || card.images?.small || null,
+        condition: 'NM',
+        game: 'pokemon',
+      }))
   } catch (error) {
     console.error('Pokemon TCG search error:', error)
     return []
@@ -116,18 +125,27 @@ export async function fetchAllPokemonCards(limit: number = 5000, startPage: numb
         break
       }
 
-      const cards = data.data.map((card: PokemonTCGCard) => ({
-        tcgPlayerId: `pokemon_${card.id}`,
-        tcgPlayerId_numeric: parseInt(card.id, 10),
-        name: card.name,
-        set: card.set?.name || 'Unknown',
-        setId: card.set?.id || 'unknown',
-        price: card.cardmarket?.prices?.trendPrice || null,
-        rarity: card.rarity || null,
-        imageUrl: card.images?.large || card.images?.small || null,
-        condition: 'NM',
-        game: 'pokemon',
-      }))
+      const cards = data.data
+        .filter((card: PokemonTCGCard) => {
+          const numeric = parseInt(card.id, 10)
+          if (isNaN(numeric)) {
+            console.warn(`Skipping card with non-numeric ID: ${card.id}`)
+            return false
+          }
+          return true
+        })
+        .map((card: PokemonTCGCard) => ({
+          tcgPlayerId: `pokemon_${card.id}`,
+          tcgPlayerId_numeric: parseInt(card.id, 10),
+          name: card.name,
+          set: card.set?.name || 'Unknown',
+          setId: card.set?.id || 'unknown',
+          price: card.cardmarket?.prices?.trendPrice || null,
+          rarity: card.rarity || null,
+          imageUrl: card.images?.large || card.images?.small || null,
+          condition: 'NM',
+          game: 'pokemon',
+        }))
 
       allCards.push(...cards)
       console.log(`Fetched ${allCards.length} total cards so far`)
