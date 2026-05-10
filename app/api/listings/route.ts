@@ -1,33 +1,55 @@
 import { supabaseServiceRole } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
       return NextResponse.json(
         { error: "Must be authenticated" },
         { status: 401 }
       );
     }
 
+    const body = await request.json();
     const {
+      title,
+      description,
+      card_type,
       card_variant_id,
       product_id,
       price,
       condition,
-      quantity,
+      grade,
+      grade_company,
+      images = [],
+      product_type = "single",
+      sealed_type,
+      quantity = 1,
       listing_type,
     } = body;
 
-    if (listing_type === "single" && !card_variant_id) {
+    const listingType = listing_type ?? product_type;
+
+    if (!title || !price || !card_type || !condition) {
       return NextResponse.json(
-        { error: "Single listings require card_variant_id" },
+        { error: "Title, price, card type, and condition are required" },
         { status: 400 }
       );
     }
-    if (listing_type === "sealed" && !product_id) {
+
+    if (listingType === "single" && !card_variant_id) {
+      return NextResponse.json(
+        { error: "Choose a card from the card database before listing a single" },
+        { status: 400 }
+      );
+    }
+    if (listingType === "sealed" && !product_id) {
       return NextResponse.json(
         { error: "Sealed listings require product_id" },
         { status: 400 }
@@ -37,13 +59,21 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabaseServiceRole
       .from("listings")
       .insert({
-        seller_id: userId,
+        seller_id: user.id,
+        title,
+        description: description || null,
+        card_type,
         card_variant_id,
         product_id,
         price,
         condition,
+        grade: grade || null,
+        grade_company: grade_company || null,
+        images,
+        product_type,
+        sealed_type: sealed_type || null,
         quantity,
-        listing_type,
+        listing_type: listingType,
         is_auction: false,
       })
       .select();
@@ -63,21 +93,31 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type") || "single";
+    const productType = searchParams.get("product_type") || searchParams.get("type") || "single";
+    const cardType = searchParams.get("card_type");
+    const condition = searchParams.get("condition");
+    const searchQuery = searchParams.get("q");
     const limit = parseInt(searchParams.get("limit") || "50");
 
-    const { data: listings, error } = await supabaseServiceRole
+    let query = supabaseServiceRole
       .from("listings")
       .select(
         `*,
-        seller:profiles(username, verified_vendor),
-        card_variant:card_variants(set_name, language),
+        profiles(username, verified_vendor),
+        card_variant:card_variants(set_name, language, image_url, cards(name, image_url)),
         product:products(name, set_name)`
       )
-      .eq("listing_type", type)
+      .eq("status", "active")
+      .eq("product_type", productType)
       .eq("is_auction", false)
       .order("created_at", { ascending: false })
       .limit(limit);
+
+    if (cardType) query = query.eq("card_type", cardType);
+    if (condition) query = query.eq("condition", condition);
+    if (searchQuery) query = query.ilike("title", `%${searchQuery}%`);
+
+    const { data: listings, error } = await query;
 
     if (error) throw error;
 

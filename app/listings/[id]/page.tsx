@@ -10,22 +10,38 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
   const { data: listing } = await supabase
     .from('listings')
-    .select('*, profiles(username, verified_vendor)')
+    .select('*, profiles(username, verified_vendor), card_variant:card_variants(set_name, language, image_url, cards(name, image_url))')
     .eq('id', id)
     .single()
 
   if (!listing || listing.status !== 'active') notFound()
 
   const isOwner = user?.id === listing.seller_id
+  const coverImage = listing.card_variant?.image_url || listing.card_variant?.cards?.image_url || listing.images?.[0]
+  const sellerPhotos = listing.images || []
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl overflow-hidden shadow-lg">
-          {listing.images[0] ? (
-            <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-400 text-lg font-medium">No image</div>
+        <div className="space-y-6">
+          <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl overflow-hidden shadow-lg">
+            {coverImage ? (
+              <img src={coverImage} alt={listing.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-400 text-lg font-medium">No image</div>
+            )}
+          </div>
+          {sellerPhotos.length > 0 && (
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 mb-3">Seller photos</h2>
+              <div className="grid grid-cols-3 gap-3">
+                {sellerPhotos.map((image: string) => (
+                  <div key={image} className="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                    <img src={image} alt={`${listing.title} seller photo`} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
         <div>

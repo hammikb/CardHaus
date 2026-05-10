@@ -46,6 +46,10 @@ export default function NewSingleListingPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!selectedCard) {
+      setError('Choose a card from the card database before listing')
+      return
+    }
     if (images.length === 0) {
       setError('At least one photo is required')
       return
@@ -61,6 +65,7 @@ export default function NewSingleListingPage() {
         price: Number(form.price),
         images,
         product_type: 'single',
+        listing_type: 'single',
         card_variant_id: selectedCard?.id ?? null,
       }),
     })
@@ -81,21 +86,11 @@ export default function NewSingleListingPage() {
       </div>
       <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-xl border border-slate-200 p-8">
         <div>
-          <label className="block text-sm font-bold text-slate-900 mb-2">Search Card Database</label>
+          <label className="block text-sm font-bold text-slate-900 mb-2">Title / Search Card Database *</label>
           <CardAutocomplete
             value={form.title}
             onChange={handleCardSelect}
             placeholder="Start typing card name (e.g. Charizard)..."
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-bold text-slate-900 mb-2">Title *</label>
-          <input
-            value={form.title}
-            onChange={e => set('title', e.target.value)}
-            placeholder="e.g. Charizard Base Set 1st Edition"
-            className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            required
           />
         </div>
         <div>

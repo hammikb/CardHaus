@@ -3,16 +3,30 @@ import Image from 'next/image'
 import { Listing } from '@/lib/supabase/types'
 import { formatCurrency } from '@/lib/utils'
 
-export default function ListingCard({ listing }: { listing: Listing & { profiles?: { username: string; verified_vendor: boolean } } }) {
+type ListingCardData = Listing & {
+  profiles?: { username: string; verified_vendor: boolean }
+  card_variant?: {
+    image_url: string | null
+    cards?: { image_url: string | null } | null
+  } | null
+}
+
+function getCoverImage(listing: ListingCardData) {
+  return listing.card_variant?.image_url || listing.card_variant?.cards?.image_url || listing.images?.[0]
+}
+
+export default function ListingCard({ listing }: { listing: ListingCardData }) {
+  const coverImage = getCoverImage(listing)
+
   return (
     <Link
       href={`/listings/${listing.id}`}
       className="block bg-white rounded-xl border border-slate-200 hover:border-blue-300 overflow-hidden transition-all duration-200 hover:shadow-xl hover:scale-105 group"
     >
       <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden relative">
-        {listing.images[0] ? (
+        {coverImage ? (
           <Image
-            src={listing.images[0]}
+            src={coverImage}
             alt={listing.title}
             width={240}
             height={240}

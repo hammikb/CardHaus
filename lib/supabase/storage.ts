@@ -1,14 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { createClient } from '@/lib/supabase/client'
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export async function uploadListingImage(file: File): Promise<string> {
+  const supabase = createClient()
+
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     throw new Error(`Invalid file type: ${file.type}. Allowed: JPEG, PNG, WebP, GIF`)
   }
