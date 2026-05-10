@@ -10,13 +10,13 @@ const GRADE_COMPANIES = ['PSA', 'BGS', 'CGC', 'SGC']
 
 interface Card {
   id: string
-  tcg_player_id: string
+  card_id: string
+  external_id: string
   name: string
   set: string
   image_url: string | null
   price: number | null
   rarity: string | null
-  condition: string
 }
 
 export default function NewGradedListingPage() {
@@ -71,6 +71,7 @@ export default function NewGradedListingPage() {
         grade: form.grade,
         images,
         product_type: 'graded',
+        card_variant_id: selectedCard?.id ?? null,
       }),
     })
 

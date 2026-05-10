@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
-  if ((order as any).easypost_shipment_id) return NextResponse.json({ error: 'Label already generated' }, { status: 400 })
+  if (order.easypost_shipment_id) return NextResponse.json({ error: 'Label already generated' }, { status: 400 })
 
   const shipment = await createShipment({
     toName: to_name, toStreet: to_street, toCity: to_city, toState: to_state, toZip: to_zip,

@@ -9,13 +9,13 @@ const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'yugioh', 'lorcana', 'one_piece'
 
 interface Card {
   id: string
-  tcg_player_id: string
+  card_id: string
+  external_id: string
   name: string
   set: string
   image_url: string | null
   price: number | null
   rarity: string | null
-  condition: string
 }
 
 export default function NewAuctionPage() {
@@ -72,7 +72,7 @@ export default function NewAuctionPage() {
         start_price: Number(form.start_price),
         ends_at: endsAt.toISOString(),
         images,
-        product_type: 'auction',
+        card_variant_id: selectedCard?.id ?? null,
       }),
     })
 

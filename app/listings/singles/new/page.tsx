@@ -11,13 +11,13 @@ const GRADE_COMPANIES = ['PSA', 'BGS', 'CGC', 'SGC']
 
 interface Card {
   id: string
-  tcg_player_id: string
+  card_id: string
+  external_id: string
   name: string
   set: string
   image_url: string | null
   price: number | null
   rarity: string | null
-  condition: string
 }
 
 export default function NewSingleListingPage() {
@@ -63,6 +63,7 @@ export default function NewSingleListingPage() {
         price: Number(form.price),
         images,
         product_type: 'single',
+        card_variant_id: selectedCard?.id ?? null,
       }),
     })
 

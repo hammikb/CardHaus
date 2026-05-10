@@ -1,15 +1,15 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 interface Card {
   id: string
-  tcg_player_id: string
+  card_id: string
+  external_id: string
   name: string
   set: string
   image_url: string | null
   price: number | null
   rarity: string | null
-  condition: string
 }
 
 interface Props {
@@ -19,16 +19,12 @@ interface Props {
 }
 
 export default function CardAutocomplete({ value, onChange, placeholder = 'Search cards...' }: Props) {
-  const [input, setInput] = useState(value)
+  const input = value
   const [suggestions, setSuggestions] = useState<Card[]>([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState<Card | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-
-  useEffect(() => {
-    setInput(value)
-  }, [value])
 
   async function search(query: string) {
     if (query.length < 2) {
@@ -52,7 +48,8 @@ export default function CardAutocomplete({ value, onChange, placeholder = 'Searc
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value
-    setInput(val)
+    setSelected(null)
+    onChange(null, val)
 
     clearTimeout(timeoutRef.current)
     if (val.length >= 2) {
@@ -64,7 +61,6 @@ export default function CardAutocomplete({ value, onChange, placeholder = 'Searc
   }
 
   function handleSelect(card: Card) {
-    setInput(card.name)
     setSelected(card)
     setSuggestions([])
     setOpen(false)
@@ -72,7 +68,6 @@ export default function CardAutocomplete({ value, onChange, placeholder = 'Searc
   }
 
   function handleClear() {
-    setInput('')
     setSelected(null)
     setSuggestions([])
     setOpen(false)

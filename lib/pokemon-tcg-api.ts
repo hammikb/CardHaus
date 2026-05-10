@@ -1,6 +1,5 @@
 export interface CardData {
   tcgPlayerId: string
-  tcgPlayerId_numeric: number
   name: string
   number: string | null
   set: string
@@ -70,17 +69,8 @@ export async function searchPokemonCards(query: string): Promise<CardData[]> {
 
     const data: PokemonTCGResponse = await response.json()
     return data.data
-      .filter((card: PokemonTCGCard) => {
-        const numeric = parseInt(card.id, 10)
-        if (isNaN(numeric)) {
-          console.warn(`Skipping card with non-numeric ID: ${card.id}`)
-          return false
-        }
-        return true
-      })
       .map((card: PokemonTCGCard) => ({
-        tcgPlayerId: `pokemon_${card.id}`,
-        tcgPlayerId_numeric: parseInt(card.id, 10),
+        tcgPlayerId: card.id,
         name: card.name,
         number: card.number || null,
         set: card.set?.name || 'Unknown',
@@ -129,17 +119,8 @@ export async function fetchAllPokemonCards(limit: number = 5000, startPage: numb
       }
 
       const cards = data.data
-        .filter((card: PokemonTCGCard) => {
-          const numeric = parseInt(card.id, 10)
-          if (isNaN(numeric)) {
-            console.warn(`Skipping card with non-numeric ID: ${card.id}`)
-            return false
-          }
-          return true
-        })
         .map((card: PokemonTCGCard) => ({
-          tcgPlayerId: `pokemon_${card.id}`,
-          tcgPlayerId_numeric: parseInt(card.id, 10),
+          tcgPlayerId: card.id,
           name: card.name,
           number: card.number || null,
           set: card.set?.name || 'Unknown',
