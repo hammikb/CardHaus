@@ -6,12 +6,14 @@ const POKEMON_SYNC_KEY = 'pokemon_cards'
 const POKEMON_API_PAGE_SIZE = 250
 const DEFAULT_BATCH_SIZE = 1000
 const MAX_BATCH_SIZE = 1500
+const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000
 
 type SyncState = {
   next_page: number
   batch_size: number
   total_synced: number
   has_more: boolean
+  completed_at: string | null
 }
 
 function parsePositiveInteger(value: unknown, fallback: number) {
@@ -24,6 +26,15 @@ function normalizeBatchSize(value: unknown, fallback: number) {
   const parsed = parsePositiveInteger(value, fallback)
   const capped = Math.min(parsed, MAX_BATCH_SIZE)
   return Math.max(POKEMON_API_PAGE_SIZE, Math.ceil(capped / POKEMON_API_PAGE_SIZE) * POKEMON_API_PAGE_SIZE)
+}
+
+function shouldStartMaintenanceRefresh(state: SyncState | null) {
+  if (!state || state.has_more || !state.completed_at) return false
+
+  const completedAt = Date.parse(state.completed_at)
+  if (Number.isNaN(completedAt)) return false
+
+  return Date.now() - completedAt >= REFRESH_INTERVAL_MS
 }
 
 async function updatePokemonSyncState(
@@ -57,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}))
     const mode = body.mode ?? request.nextUrl.searchParams.get('mode')
-    const reset = body.reset === true || request.nextUrl.searchParams.get('reset') === 'true'
+    const requestedReset = body.reset === true || request.nextUrl.searchParams.get('reset') === 'true'
     const autoMode = mode === 'auto'
 
     supabase = await createServiceClient()
@@ -71,7 +82,7 @@ export async function POST(request: NextRequest) {
     if (autoMode) {
       const { data: state, error: stateError } = await supabase
         .from('pokemon_sync_state')
-        .select('next_page, batch_size, total_synced, has_more')
+        .select('next_page, batch_size, total_synced, has_more, completed_at')
         .eq('sync_key', POKEMON_SYNC_KEY)
         .maybeSingle<SyncState>()
 
@@ -79,6 +90,9 @@ export async function POST(request: NextRequest) {
         console.error(`Pokemon sync state query error: ${JSON.stringify(stateError)}`)
         return NextResponse.json({ error: stateError.message }, { status: 500 })
       }
+
+      const maintenanceRefresh = shouldStartMaintenanceRefresh(state)
+      const reset = requestedReset || maintenanceRefresh
 
       currentPage = reset ? 1 : state?.next_page ?? 1
       previousTotalSynced = reset ? 0 : state?.total_synced ?? 0
@@ -88,13 +102,18 @@ export async function POST(request: NextRequest) {
       )
 
       if (state && !state.has_more && !reset) {
+        const nextRefreshAt = state.completed_at
+          ? new Date(Date.parse(state.completed_at) + REFRESH_INTERVAL_MS).toISOString()
+          : null
+
         return NextResponse.json({
           success: true,
           count: 0,
           page: state.next_page,
           next_page: null,
           has_more: false,
-          message: 'Pokemon catalog sync is already complete. Pass reset=true to start over.',
+          next_refresh_at: nextRefreshAt,
+          message: 'Pokemon catalog sync is complete. The next maintenance refresh will start automatically.',
           synced_at: new Date().toISOString(),
         })
       }
