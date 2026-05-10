@@ -1,9 +1,5 @@
-import { createServiceClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
-
-const CARD_ID_COLUMN = "tcgcsv_id";
-const GAME_TYPE = "pokemon";
-const MAX_CARDS_TO_SYNC = 1000;
+import { supabaseServiceRole } from "@/lib/supabase";
 
 interface PokemonTCGCard {
   id: string;
@@ -17,13 +13,6 @@ interface PokemonTCGCard {
   set?: {
     id?: string;
     name?: string;
-  };
-  cardmarket?: {
-    prices?: {
-      averageSellPrice?: number;
-      lowPrice?: number;
-      trendPrice?: number;
-    };
   };
 }
 
@@ -44,14 +33,13 @@ async function fetchPokemonTCGCards(): Promise<PokemonTCGCard[]> {
     cards.push(...data.data);
 
     pageUrl = data.links?.next || "";
-    if (cards.length >= MAX_CARDS_TO_SYNC) break;
+    if (cards.length >= 1000) break;
   }
 
   return cards;
 }
 
 async function syncCards(): Promise<{ inserted: number; updated: number }> {
-  const supabaseServiceRole = await createServiceClient();
   const cards = await fetchPokemonTCGCards();
   let inserted = 0;
   let updated = 0;
@@ -62,7 +50,7 @@ async function syncCards(): Promise<{ inserted: number; updated: number }> {
     const { data: existingCard, error: selectError } = await supabaseServiceRole
       .from("cards")
       .select("id")
-      .eq(CARD_ID_COLUMN, card.id)
+      .eq("tcgcsv_id", card.id)
       .maybeSingle();
 
     if (selectError) {
@@ -70,7 +58,7 @@ async function syncCards(): Promise<{ inserted: number; updated: number }> {
       continue;
     }
 
-    let cardId: number;
+    let cardId: string;
 
     if (existingCard) {
       const { error: updateError } = await supabaseServiceRole
@@ -94,10 +82,10 @@ async function syncCards(): Promise<{ inserted: number; updated: number }> {
       const { data: insertedCard, error: insertError } = await supabaseServiceRole
         .from("cards")
         .insert({
-          [CARD_ID_COLUMN]: card.id,
+          tcgcsv_id: card.id,
           name: card.name,
           number: card.number || null,
-          game: GAME_TYPE,
+          game: "pokemon",
           image_url: imageUrl || null,
         })
         .select("id")
@@ -142,8 +130,8 @@ async function syncCards(): Promise<{ inserted: number; updated: number }> {
 
 export async function POST(request: NextRequest) {
   try {
-    const cronSecret = request.headers.get("authorization");
-    if (!cronSecret || cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
