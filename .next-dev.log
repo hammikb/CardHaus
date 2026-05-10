@@ -117,3 +117,4 @@ Card lookup result: {
 ✓ Compiled in 65ms
  GET /auctions 200 in 145ms (next.js: 36ms, proxy.ts: 27ms, application-code: 82ms)
  GET /auctions 200 in 20ms (next.js: 1978µs, proxy.ts: 3ms, application-code: 16ms)
+ GET /marketplace 200 in 197ms (next.js: 45ms, proxy.ts: 23ms, application-code: 129ms)
