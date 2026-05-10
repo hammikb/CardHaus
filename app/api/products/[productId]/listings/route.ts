@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
-    const productId = parseInt(params.productId);
+    const { productId: productIdParam } = await params;
+    const productId = parseInt(productIdParam);
 
     const { data: product, error: productError } = await supabaseServiceRole
       .from("products")
