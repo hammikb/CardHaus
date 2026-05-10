@@ -55,44 +55,81 @@ async function syncCards(): Promise<{ inserted: number; updated: number }> {
   for (const card of cards) {
     const imageUrl = card.images?.large || card.images?.small;
 
-    const { data: existingCard } = await supabaseServiceRole
+    const { data: existingCard, error: selectError } = await supabaseServiceRole
       .from("cards")
       .select("id")
       .eq("pokemon_tcg_id", card.id)
-      .single();
+      .maybeSingle();
+
+    if (selectError) {
+      console.error(`Error querying card ${card.id}:`, selectError);
+      continue;
+    }
+
+    let cardId: number;
 
     if (existingCard) {
-      await supabaseServiceRole
+      const { error: updateError } = await supabaseServiceRole
         .from("cards")
         .update({
           name: card.name,
           card_number: card.number || null,
           image_url: imageUrl || null,
-          updated_at: new Date(),
+          updated_at: new Date().toISOString(),
         })
         .eq("id", existingCard.id);
+
+      if (updateError) {
+        console.error(`Error updating card ${card.id}:`, updateError);
+        continue;
+      }
+
+      cardId = existingCard.id;
       updated++;
     } else {
-      await supabaseServiceRole.from("cards").insert({
-        pokemon_tcg_id: card.id,
-        name: card.name,
-        card_number: card.number || null,
-        game: "pokemon",
-        image_url: imageUrl || null,
-      });
+      const { data: insertedCard, error: insertError } = await supabaseServiceRole
+        .from("cards")
+        .insert({
+          pokemon_tcg_id: card.id,
+          name: card.name,
+          card_number: card.number || null,
+          game: "pokemon",
+          image_url: imageUrl || null,
+        })
+        .select("id")
+        .single();
+
+      if (insertError) {
+        console.error(`Error inserting card ${card.id}:`, insertError);
+        continue;
+      }
+
+      cardId = insertedCard!.id;
       inserted++;
     }
 
     if (card.set?.id) {
-      await supabaseServiceRole.from("card_variants").upsert({
-        card_id: existingCard?.id || card.id,
-        set_id: card.set.id,
-        set_name: card.set.name || "Unknown",
-        language: "English",
-        edition: null,
-        rarity: card.rarity || null,
-        image_url: imageUrl || null,
-      });
+      const { error: variantError } = await supabaseServiceRole
+        .from("card_variants")
+        .upsert(
+          {
+            card_id: cardId,
+            set_id: card.set.id,
+            set_name: card.set.name || "Unknown",
+            language: "English",
+            edition: null,
+            rarity: card.rarity || null,
+            image_url: imageUrl || null,
+          },
+          { onConflict: "card_id,set_id,language,edition" }
+        );
+
+      if (variantError) {
+        console.error(
+          `Error upserting variant for card ${card.id}:`,
+          variantError
+        );
+      }
     }
   }
 
