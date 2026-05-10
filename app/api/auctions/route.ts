@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { title, description, card_type, condition, grade, grade_company, images, start_price, ends_at } = await request.json()
+  const { title, description, card_type, condition, grade, grade_company, images, start_price, ends_at, card_variant_id } = await request.json()
 
   if (!title || !start_price || !ends_at || !card_type || !condition) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -33,7 +33,19 @@ export async function POST(request: NextRequest) {
 
   const { data: listing, error: listingError } = await supabase
     .from('listings')
-    .insert({ seller_id: user.id, title, description, price: start_price, card_type, condition, grade, grade_company, images: images ?? [], is_auction: true })
+    .insert({
+      seller_id: user.id,
+      title,
+      description,
+      price: start_price,
+      card_type,
+      condition,
+      grade,
+      grade_company,
+      images: images ?? [],
+      is_auction: true,
+      card_variant_id: card_variant_id ?? null,
+    })
     .select()
     .single()
 
