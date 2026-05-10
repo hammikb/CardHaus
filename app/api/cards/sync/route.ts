@@ -37,18 +37,29 @@ export async function POST(request: NextRequest) {
         image_url: c.imageUrl,
       }))
 
-      const { data: insertedCards, error: cardError } = await supabase
+      const { error: cardError } = await supabase
         .from('cards')
         .upsert(cardsToInsert, { onConflict: 'tcgcsv_id' })
-        .select('id, tcgcsv_id')
 
       if (cardError) {
         console.error(`Card insert error at page ${currentPage}: ${JSON.stringify(cardError)}`)
         return NextResponse.json({ error: cardError.message }, { status: 500 })
       }
 
-      // Map inserted cards back to variants for insertion
-      const cardIdMap = new Map(insertedCards.map((c: any) => [c.tcgcsv_id, c.id]))
+      // Query cards table to get all IDs (upsert select doesn't return updated rows)
+      const tcgcsv_ids = cardsToInsert.map(c => c.tcgcsv_id)
+      const { data: allCards, error: queryError } = await supabase
+        .from('cards')
+        .select('id, tcgcsv_id')
+        .in('tcgcsv_id', tcgcsv_ids)
+
+      if (queryError) {
+        console.error(`Card query error at page ${currentPage}: ${JSON.stringify(queryError)}`)
+        return NextResponse.json({ error: queryError.message }, { status: 500 })
+      }
+
+      // Map cards to variants for insertion
+      const cardIdMap = new Map(allCards.map((c: any) => [c.tcgcsv_id, c.id]))
       const variantsToInsert = cards.map(c => ({
         card_id: cardIdMap.get(c.tcgPlayerId_numeric),
         set_id: c.setId,
