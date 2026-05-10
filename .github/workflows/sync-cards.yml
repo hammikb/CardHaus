@@ -1,17 +1,13 @@
-name: Weekly Card Data Sync
-
+name: Sync Cards Nightly
 on:
   schedule:
-    - cron: '0 2 * * *'
-  workflow_dispatch:
+    - cron: '0 2 * * *'  # 2 AM UTC daily
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync Pokémon cards from Pokemon TCG API
+      - name: Sync cards
         run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json" \
-            "https://card-haus-phi.vercel.app/api/cards/sync"
+          curl -X POST https://card-haus-phi.vercel.app/api/cron/sync-cards \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
