@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const updatedAt = new Date().toISOString()
 
     const cardsToInsert = cards.map(c => ({
-      external_id: c.tcgPlayerId,
+      tcgcsv_id: c.tcgPlayerId,
       name: c.name,
       number: c.number,
       game: c.game,
@@ -49,39 +49,39 @@ export async function POST(request: NextRequest) {
 
     const { error: cardError } = await supabase
       .from('cards')
-      .upsert(cardsToInsert, { onConflict: 'external_id' })
+      .upsert(cardsToInsert, { onConflict: 'tcgcsv_id' })
 
     if (cardError) {
       console.error(`Card insert error at page ${currentPage}: ${JSON.stringify(cardError)}`)
       return NextResponse.json({ error: cardError.message }, { status: 500 })
     }
 
-    const externalIds = cardsToInsert.map(c => c.external_id)
+    const tcgcsv_ids = cardsToInsert.map(c => c.tcgcsv_id)
     const { data: allCards, error: queryError } = await supabase
       .from('cards')
-      .select('id, external_id')
-      .in('external_id', externalIds)
+      .select('id, tcgcsv_id')
+      .in('tcgcsv_id', tcgcsv_ids)
 
     if (queryError) {
       console.error(`Card query error at page ${currentPage}: ${JSON.stringify(queryError)}`)
       return NextResponse.json({ error: queryError.message }, { status: 500 })
     }
 
-    const cardIdMap = new Map((allCards || []).map(c => [c.external_id, c.id]))
+    const cardIdMap = new Map((allCards || []).map(c => [c.tcgcsv_id, c.id]))
     const variantsToInsert = cards.map(c => ({
       card_id: cardIdMap.get(c.tcgPlayerId),
       set_id: c.setId,
       set_name: c.set,
       language: 'English',
+      edition: null,
       rarity: c.rarity,
       image_url: c.imageUrl,
-      price: c.price,
       updated_at: updatedAt,
     })).filter(c => c.card_id)
 
     const { error: variantError } = await supabase
       .from('card_variants')
-      .upsert(variantsToInsert, { onConflict: 'card_id,set_id,language' })
+      .upsert(variantsToInsert, { onConflict: 'card_id,set_id,language,edition' })
 
     if (variantError) {
       console.error(`Variant insert error at page ${currentPage}: ${JSON.stringify(variantError)}`)
