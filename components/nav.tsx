@@ -1,23 +1,47 @@
 'use client'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import SearchDropdown from './search-dropdown'
 
 export default function Nav() {
-  const [user, setUser] = useState<{ email?: string } | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [signingOut, setSigningOut] = useState(false)
   const supabase = createClient()
   const router = useRouter()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
-  }, [supabase])
+    let mounted = true
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (mounted) setUser(data.user)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      router.refresh()
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [router, supabase])
 
   async function signOut() {
-    await supabase.auth.signOut()
-    router.push('/')
+    setSigningOut(true)
+    setUser(null)
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      setSigningOut(false)
+      return
+    }
     router.refresh()
+    router.replace('/')
   }
 
   return (
@@ -47,9 +71,10 @@ export default function Nav() {
               </Link>
               <button
                 onClick={signOut}
+                disabled={signingOut}
                 className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
               >
-                Sign out
+                {signingOut ? 'Signing out...' : 'Sign out'}
               </button>
             </>
           ) : (

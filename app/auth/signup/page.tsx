@@ -16,10 +16,15 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) { setError(error.message); setLoading(false); return }
-    router.push('/marketplace')
+    if (!data.session) {
+      setError('Account created. Check your email to confirm your account before signing in.')
+      setLoading(false)
+      return
+    }
     router.refresh()
+    router.replace('/marketplace')
   }
 
   return (

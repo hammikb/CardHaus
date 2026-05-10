@@ -18,8 +18,8 @@ export default function LoginPage() {
     setError('')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setError(error.message); setLoading(false); return }
-    router.push('/marketplace')
     router.refresh()
+    router.replace('/marketplace')
   }
 
   return (
