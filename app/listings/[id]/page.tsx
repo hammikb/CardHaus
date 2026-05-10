@@ -24,7 +24,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
     <main className="max-w-5xl mx-auto px-4 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         <div className="space-y-6">
-          <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl overflow-hidden shadow-lg">
+          <div className="aspect-[2/3] bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl overflow-hidden shadow-lg border border-slate-400">
             {coverImage ? (
               <img src={coverImage} alt={listing.title} className="w-full h-full object-cover" />
             ) : (
@@ -36,7 +36,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               <h2 className="text-sm font-bold text-slate-900 mb-3">Seller photos</h2>
               <div className="grid grid-cols-3 gap-3">
                 {sellerPhotos.map((image: string) => (
-                  <div key={image} className="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                  <div key={image} className="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-400">
                     <img src={image} alt={`${listing.title} seller photo`} className="w-full h-full object-cover" />
                   </div>
                 ))}
