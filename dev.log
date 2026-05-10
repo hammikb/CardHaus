@@ -17,3 +17,4 @@
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
 
  GET / 200 in 1911ms (next.js: 1203ms, proxy.ts: 44ms, application-code: 664ms)
+✓ Compiled in 45ms

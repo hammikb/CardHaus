@@ -26,7 +26,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         <div className="space-y-6">
           <div className="aspect-[2/3] bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl overflow-hidden shadow-lg border border-slate-400">
             {coverImage ? (
-              <img src={coverImage} alt={listing.title} className="w-full h-full object-cover" />
+              <img src={coverImage} alt={listing.title} className="w-full h-full object-contain" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-slate-400 text-lg font-medium">No image</div>
             )}

@@ -29,7 +29,7 @@ export default function ListingCard({ listing }: { listing: ListingCardData }) {
             src={coverImage}
             alt={listing.title}
             fill
-            className="object-cover"
+            className="object-contain"
             loading="lazy"
             priority={false}
           />
