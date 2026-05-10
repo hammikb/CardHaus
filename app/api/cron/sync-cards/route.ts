@@ -70,7 +70,7 @@ async function syncCards(): Promise<{ inserted: number; updated: number }> {
       continue;
     }
 
-    let cardId: number;
+    let cardId: string;
 
     if (existingCard) {
       const { error: updateError } = await supabaseServiceRole
