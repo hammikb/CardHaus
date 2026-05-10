@@ -10,11 +10,10 @@ const CARD_TYPES = ['pokemon', 'mtg', 'sports', 'yugioh', 'lorcana', 'one_piece'
 interface Card {
   id: string
   card_id: string
-  external_id: string
+  tcgcsv_id: string
   name: string
   set: string
   image_url: string | null
-  price: number | null
   rarity: string | null
 }
 

@@ -12,11 +12,10 @@ const GRADE_COMPANIES = ['PSA', 'BGS', 'CGC', 'SGC']
 interface Card {
   id: string
   card_id: string
-  external_id: string
+  tcgcsv_id: string
   name: string
   set: string
   image_url: string | null
-  price: number | null
   rarity: string | null
 }
 
@@ -40,7 +39,6 @@ export default function NewSingleListingPage() {
     setSelectedCard(card)
     if (card) {
       set('title', card.name)
-      if (card.price) set('price', card.price.toString())
     } else {
       set('title', name)
     }

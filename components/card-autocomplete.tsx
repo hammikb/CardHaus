@@ -4,11 +4,10 @@ import { useRef, useState } from 'react'
 interface Card {
   id: string
   card_id: string
-  external_id: string
+  tcgcsv_id: string
   name: string
   set: string
   image_url: string | null
-  price: number | null
   rarity: string | null
 }
 
@@ -114,7 +113,7 @@ export default function CardAutocomplete({ value, onChange, placeholder = 'Searc
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{card.name}</p>
                 <p className="text-xs text-gray-500">
-                  {card.set} {card.rarity && `• ${card.rarity}`} {card.price && `• $${card.price.toFixed(2)}`}
+                  {card.set} {card.rarity && `• ${card.rarity}`}
                 </p>
               </div>
             </button>
