@@ -1,4 +1,4 @@
-import { supabaseServiceRole } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 interface PokemonTCGCard {
@@ -47,6 +47,7 @@ async function fetchPokemonTCGCards(): Promise<PokemonTCGCard[]> {
 }
 
 async function syncCards(): Promise<{ inserted: number; updated: number }> {
+  const supabaseServiceRole = await createServiceClient();
   const cards = await fetchPokemonTCGCards();
   let inserted = 0;
   let updated = 0;
