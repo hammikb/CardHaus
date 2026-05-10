@@ -23,13 +23,13 @@ export default function ListingCard({ listing }: { listing: ListingCardData }) {
       href={`/listings/${listing.id}`}
       className="block bg-white rounded-xl border border-slate-200 hover:border-blue-300 overflow-hidden transition-all duration-200 hover:shadow-xl hover:scale-105 group"
     >
-      <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden relative">
+      <div className="aspect-[2/3] bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden relative">
         {coverImage ? (
           <Image
             src={coverImage}
             alt={listing.title}
             width={240}
-            height={240}
+            height={360}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
             loading="lazy"
             priority={false}
