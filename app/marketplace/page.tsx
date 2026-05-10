@@ -17,7 +17,8 @@ async function getListings(searchParams: Record<string, string>) {
     ...searchParams,
     product_type: searchParams.product_type || 'single',
   }).toString()
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/listings?${params}`, { cache: 'no-store' })
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/listings?${params}`, { cache: 'no-store' })
   return res.json() as Promise<Listing[]>
 }
 
