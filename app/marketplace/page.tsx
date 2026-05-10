@@ -18,8 +18,14 @@ async function getListings(searchParams: Record<string, string>) {
     product_type: searchParams.product_type || 'single',
   }).toString()
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/listings?${params}`, { cache: 'no-store' })
-  return res.json() as Promise<Listing[]>
+  try {
+    const res = await fetch(`${baseUrl}/api/listings?${params}`, { cache: 'no-store' })
+    const data = await res.json()
+    return Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error('Failed to fetch listings:', error)
+    return []
+  }
 }
 
 function MarketplaceContent() {
