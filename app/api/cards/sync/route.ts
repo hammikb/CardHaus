@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
         .map(c => ({
           tcgcsv_id: c.tcgPlayerId_numeric,
           name: c.name,
+          number: c.number,
           game: c.game,
           image_url: c.imageUrl,
         }))
