@@ -1,50 +1,88 @@
-import { createClient } from '@/lib/supabase/server'
-import { formatCurrency } from '@/lib/utils'
-import Link from 'next/link'
+"use client";
 
-export default async function AuctionsPage() {
-  const supabase = await createClient()
-  const now = new Date().toISOString()
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
-  const { data: auctions } = await supabase
-    .from('auctions')
-    .select('*, listings(id, title, images, card_type, condition)')
-    .gt('ends_at', now)
-    .order('ends_at', { ascending: true })
+interface Auction {
+  id: number;
+  title: string;
+  image_url: string;
+  starting_bid: number;
+  current_bid: number;
+  ends_at: string;
+  seller: { username: string; rating: number };
+}
+
+export default function AuctionsPage() {
+  const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAuctions();
+  }, []);
+
+  async function fetchAuctions() {
+    setLoading(true);
+    const res = await fetch("/api/auctions?limit=50");
+    const data = await res.json();
+    setAuctions(data.auctions || []);
+    setLoading(false);
+  }
+
+  const getTimeRemaining = (endsAt: string) => {
+    const now = new Date();
+    const end = new Date(endsAt);
+    const diff = end.getTime() - now.getTime();
+
+    if (diff <= 0) return "Ended";
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m left`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h left`;
+    return `${Math.floor(diff / 86400000)}d left`;
+  };
+
+  if (loading) return <div className="p-8 text-center">Loading...</div>;
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Auctions</h1>
+    <div className="min-h-screen bg-gray-100 p-8">
+      <h1 className="text-4xl font-bold mb-8">Auctions</h1>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {auctions.map((auction) => (
+          <div
+            key={auction.id}
+            className="bg-white rounded-lg shadow hover:shadow-lg transition cursor-pointer overflow-hidden"
+          >
+            <div className="relative w-full h-64">
+              {auction.image_url && (
+                <Image
+                  src={auction.image_url}
+                  alt={auction.title}
+                  fill
+                  className="object-cover"
+                />
+              )}
+            </div>
+            <div className="p-3">
+              <h3 className="font-semibold text-sm truncate">{auction.title}</h3>
+              <p className="text-green-600 font-bold mt-2">
+                ${auction.current_bid.toFixed(2)}
+              </p>
+              <p className="text-gray-500 text-xs">
+                Started: ${auction.starting_bid.toFixed(2)}
+              </p>
+              <p className="text-red-600 text-xs font-semibold mt-2">
+                {getTimeRemaining(auction.ends_at)}
+              </p>
+              <p className="text-gray-600 text-xs mt-2">
+                By: {auction.seller.username}
+              </p>
+              <button className="w-full mt-3 bg-blue-600 text-white text-sm py-1 rounded hover:bg-blue-700">
+                Bid
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
-      {auctions && auctions.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {auctions.map(a => (
-            <Link key={a.id} href={`/auctions/${a.id}`}
-              className="block bg-white border rounded-lg hover:shadow-md transition-shadow">
-              <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
-                {a.listings?.images?.[0] ? (
-                  <img src={a.listings.images[0]} alt={a.listings.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">No image</div>
-                )}
-              </div>
-              <div className="p-4">
-                <p className="font-semibold truncate">{a.listings?.title}</p>
-                <p className="text-blue-600 font-bold mt-1">
-                  {a.current_bid ? formatCurrency(a.current_bid) : `Starts at ${formatCurrency(a.start_price)}`}
-                </p>
-                <div className="flex justify-between mt-2 text-xs text-gray-500">
-                  <span>{a.bid_count} bids</span>
-                  <span>Ends {new Date(a.ends_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500">No active auctions.</p>
-      )}
-    </main>
-  )
+    </div>
+  );
 }
