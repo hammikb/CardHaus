@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 interface Auction {
-  id: number;
+  id: string;
   title: string;
   image_url: string;
   starting_bid: number;
@@ -18,16 +18,23 @@ export default function AuctionsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAuctions();
-  }, []);
+    let cancelled = false;
 
-  async function fetchAuctions() {
-    setLoading(true);
-    const res = await fetch("/api/auctions?limit=50");
-    const data = await res.json();
-    setAuctions(data.auctions || []);
-    setLoading(false);
-  }
+    async function loadAuctions() {
+      const res = await fetch("/api/auctions?limit=50");
+      const data = await res.json();
+      if (!cancelled) {
+        setAuctions(Array.isArray(data) ? data : data.auctions || []);
+        setLoading(false);
+      }
+    }
+
+    loadAuctions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const getTimeRemaining = (endsAt: string) => {
     const now = new Date();

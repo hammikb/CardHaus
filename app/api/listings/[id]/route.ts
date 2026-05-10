@@ -7,7 +7,6 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const listingId = parseInt(id);
     const userId = request.headers.get("x-user-id");
     if (!userId) {
       return NextResponse.json(
@@ -21,7 +20,7 @@ export async function PATCH(
     const { data: listing } = await supabaseServiceRole
       .from("listings")
       .select("seller_id")
-      .eq("id", listingId)
+      .eq("id", id)
       .single();
 
     if (!listing || listing.seller_id !== userId) {
@@ -34,7 +33,7 @@ export async function PATCH(
     const { data, error } = await supabaseServiceRole
       .from("listings")
       .update(body)
-      .eq("id", listingId)
+      .eq("id", id)
       .select();
 
     if (error) throw error;
@@ -55,7 +54,6 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const listingId = parseInt(id);
     const userId = request.headers.get("x-user-id");
     if (!userId) {
       return NextResponse.json(
@@ -67,7 +65,7 @@ export async function DELETE(
     const { data: listing } = await supabaseServiceRole
       .from("listings")
       .select("seller_id")
-      .eq("id", listingId)
+      .eq("id", id)
       .single();
 
     if (!listing || listing.seller_id !== userId) {
@@ -80,7 +78,7 @@ export async function DELETE(
     const { error } = await supabaseServiceRole
       .from("listings")
       .delete()
-      .eq("id", listingId);
+      .eq("id", id);
 
     if (error) throw error;
 

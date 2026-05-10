@@ -21,7 +21,8 @@ async function getListings(searchParams: Record<string, string>) {
   try {
     const res = await fetch(`${baseUrl}/api/listings?${params}`, { cache: 'no-store' })
     const data = await res.json()
-    return Array.isArray(data) ? data : []
+    if (Array.isArray(data)) return data
+    return Array.isArray(data.listings) ? data.listings : []
   } catch (error) {
     console.error('Failed to fetch listings:', error)
     return []
@@ -51,7 +52,7 @@ function MarketplaceContent() {
     const loadListings = async () => {
       setLoading(true)
       const params = Object.entries(filters)
-        .filter(([_, v]) => v)
+        .filter(([, v]) => v)
         .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
 
       const searchString = new URLSearchParams(params).toString()

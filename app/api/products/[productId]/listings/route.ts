@@ -6,8 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
-    const { productId: productIdParam } = await params;
-    const productId = parseInt(productIdParam);
+    const { productId } = await params;
 
     const { data: product, error: productError } = await supabaseServiceRole
       .from("products")
@@ -26,7 +25,7 @@ export async function GET(
       .from("listings")
       .select(
         `*,
-        seller:profiles(username, rating)`
+        seller:profiles(username, verified_vendor)`
       )
       .eq("product_id", productId)
       .eq("listing_type", "sealed")

@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface SellerListing {
-  id: number;
-  card_variant_id?: number;
-  product_id?: number;
+  id: string;
+  card_variant_id?: string;
+  product_id?: string;
   price: number;
   quantity: number;
   listing_type: string;
@@ -21,18 +21,25 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchListings();
+    let cancelled = false;
+
+    async function loadListings() {
+      const res = await fetch("/api/listings");
+      const data = await res.json();
+      if (!cancelled) {
+        setListings(data.listings || []);
+        setLoading(false);
+      }
+    }
+
+    loadListings();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  async function fetchListings() {
-    setLoading(true);
-    const res = await fetch("/api/listings");
-    const data = await res.json();
-    setListings(data.listings || []);
-    setLoading(false);
-  }
-
-  async function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     if (!confirm("Delete this listing?")) return;
     const res = await fetch(`/api/listings/${id}`, {
       method: "DELETE",

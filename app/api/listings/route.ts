@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       .from("listings")
       .select(
         `*,
-        seller:profiles(username, rating),
+        seller:profiles(username, verified_vendor),
         card_variant:card_variants(set_name, language),
         product:products(name, set_name)`
       )

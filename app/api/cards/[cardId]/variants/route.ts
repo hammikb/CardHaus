@@ -1,6 +1,24 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
+type ListingRow = {
+  id: string;
+  card_variant_id: string;
+  price: number;
+  condition: string;
+  quantity: number;
+  seller_id: string;
+  profiles:
+    | { username: string; verified_vendor: boolean }
+    | { username: string; verified_vendor: boolean }[]
+    | null;
+};
+
+type CardVariantRow = {
+  id: string;
+  [key: string]: unknown;
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ cardId: string }> }
@@ -29,18 +47,18 @@ export async function GET(
     if (variantsError) throw variantsError;
 
     // Fetch listings separately to ensure price field is available
-    const variantIds = (variants || []).map((v: any) => v.id);
-    let listingsMap: Record<string, any[]> = {};
+    const variantIds = ((variants || []) as CardVariantRow[]).map((v) => v.id);
+    let listingsMap: Record<string, ListingRow[]> = {};
 
     if (variantIds.length > 0) {
       const { data: listings, error: listingsError } = await supabase
         .from("listings")
-        .select("id, price, condition, quantity, seller_id, profiles(username, verified_vendor)")
+        .select("id, card_variant_id, price, condition, quantity, seller_id, profiles(username, verified_vendor)")
         .in("card_variant_id", variantIds)
         .eq("status", "active");
 
       if (!listingsError && listings) {
-        listingsMap = listings.reduce((map: Record<string, any[]>, listing: any) => {
+        listingsMap = (listings as unknown as ListingRow[]).reduce<Record<string, ListingRow[]>>((map, listing) => {
           if (!map[listing.card_variant_id]) {
             map[listing.card_variant_id] = [];
           }
@@ -50,9 +68,9 @@ export async function GET(
       }
     }
 
-    const sortedVariants = (variants || []).map((v: any) => ({
+    const sortedVariants = ((variants || []) as CardVariantRow[]).map((v) => ({
       ...v,
-      listings: (listingsMap[v.id] || []).sort((a: any, b: any) => a.price - b.price),
+      listings: (listingsMap[v.id] || []).sort((a, b) => a.price - b.price),
     }));
 
     return NextResponse.json({
