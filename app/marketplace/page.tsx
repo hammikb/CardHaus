@@ -89,88 +89,94 @@ function MarketplaceContent() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <div className="mb-8 flex flex-col gap-5 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-12 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Marketplace</h1>
-            <p className="mt-2 text-sm font-medium text-slate-500">
-              {loading ? 'Finding active listings...' : `${listings.length} active ${filters.product_type || 'single'} listings`}
+            <h1 className="text-4xl font-black tracking-tight text-slate-950">Marketplace</h1>
+            <p className="mt-3 text-base text-slate-600">
+              {loading ? 'Finding active listings...' : `${listings.length} ${listings.length === 1 ? 'listing' : 'listings'} available`}
             </p>
           </div>
           <Link
             href="/listings/new"
-            className="inline-flex w-fit items-center justify-center rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            className="inline-flex w-fit items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 active:translate-y-0.5"
           >
             List a Card
           </Link>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[15rem_1fr]">
+        <div className="grid gap-8 lg:grid-cols-[14rem_1fr]">
           <aside>
-            <div className="sticky top-24 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-4">
-                <h2 className="text-sm font-black uppercase tracking-wide text-slate-950">Filters</h2>
+            <div className="sticky top-24 space-y-6 rounded-2xl border border-slate-200 bg-white/80 p-6 backdrop-blur-sm shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold uppercase tracking-wide text-slate-900">Filters</h2>
                 <button
                   onClick={handleClearFilters}
-                  className="text-xs font-bold text-slate-400 hover:text-blue-700"
+                  className="text-xs font-bold text-slate-400 hover:text-blue-600 transition-colors"
                 >
                   Reset
                 </button>
               </div>
 
-            <h3 className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Product Type</h3>
-            <div className="mb-6 grid grid-cols-3 gap-2 lg:grid-cols-1">
-              {PRODUCT_TYPES.map(t => (
-                <button
-                  key={t}
-                  onClick={() => handleFilterClick('product_type', t)}
-                  className={`rounded-lg px-3 py-2 text-left text-sm font-bold capitalize transition-colors ${
-                    filters.product_type === t
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
+              <div>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-700">Product Type</h3>
+                <div className="grid grid-cols-3 gap-2 lg:grid-cols-1">
+                  {PRODUCT_TYPES.map(t => (
+                    <button
+                      key={t}
+                      onClick={() => handleFilterClick('product_type', t)}
+                      className={`rounded-lg px-3 py-2.5 text-left text-sm font-semibold capitalize transition-all duration-150 ${
+                        filters.product_type === t
+                          ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <h3 className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Card Type</h3>
-            <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-1">
-              {CARD_TYPES.map(t => (
-                <button
-                  key={t}
-                  onClick={() => handleFilterClick('card_type', t)}
-                  className={`rounded-lg px-3 py-2 text-left text-sm font-semibold capitalize transition-colors ${
-                    filters.card_type === t
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700'
-                  }`}
-                >
-                  {formatLabel(t)}
-                </button>
-              ))}
-            </div>
+              <div>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-700">Card Type</h3>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-1">
+                  {CARD_TYPES.map(t => (
+                    <button
+                      key={t}
+                      onClick={() => handleFilterClick('card_type', t)}
+                      className={`rounded-lg px-3 py-2.5 text-left text-sm font-semibold capitalize transition-all duration-150 ${
+                        filters.card_type === t
+                          ? 'bg-slate-900 text-white shadow-md'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {formatLabel(t)}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <h3 className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Condition</h3>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">
-              {CONDITIONS.map(c => (
-                <button
-                  key={c}
-                  onClick={() => handleFilterClick('condition', c)}
-                  className={`rounded-lg px-3 py-2 text-left text-sm font-semibold capitalize transition-colors ${
-                    filters.condition === c
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700'
-                  }`}
-                >
-                  {formatLabel(c)}
-                </button>
-              ))}
+              <div>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-700">Condition</h3>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">
+                  {CONDITIONS.map(c => (
+                    <button
+                      key={c}
+                      onClick={() => handleFilterClick('condition', c)}
+                      className={`rounded-lg px-3 py-2.5 text-left text-sm font-semibold capitalize transition-all duration-150 ${
+                        filters.condition === c
+                          ? 'bg-slate-900 text-white shadow-md'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {formatLabel(c)}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
 
         <section className="min-w-0">
           {loading ? (
