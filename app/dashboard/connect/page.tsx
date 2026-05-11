@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getStripe } from '@/lib/stripe'
 import { redirect } from 'next/navigation'
 import ConnectButton from './connect-button'
 
@@ -13,6 +14,15 @@ export default async function ConnectPage({ searchParams }: { searchParams: Prom
     .select('stripe_onboarded, stripe_account_id')
     .eq('id', user.id)
     .single()
+
+  if (profile?.stripe_account_id && !profile.stripe_onboarded) {
+    const account = await getStripe().accounts.retrieve(profile.stripe_account_id)
+    const onboarded = Boolean(account.details_submitted && account.charges_enabled && account.payouts_enabled)
+    if (onboarded !== profile.stripe_onboarded) {
+      await supabase.from('profiles').update({ stripe_onboarded: onboarded }).eq('id', user.id)
+      profile.stripe_onboarded = onboarded
+    }
+  }
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-8">

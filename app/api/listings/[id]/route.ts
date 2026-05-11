@@ -1,4 +1,5 @@
 import { supabaseServiceRole } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
@@ -7,8 +8,11 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
       return NextResponse.json(
         { error: "Must be authenticated" },
         { status: 401 }
@@ -23,7 +27,7 @@ export async function PATCH(
       .eq("id", id)
       .single();
 
-    if (!listing || listing.seller_id !== userId) {
+    if (!listing || listing.seller_id !== user.id) {
       return NextResponse.json(
         { error: "Not authorized" },
         { status: 403 }
@@ -54,8 +58,11 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
       return NextResponse.json(
         { error: "Must be authenticated" },
         { status: 401 }
@@ -68,7 +75,7 @@ export async function DELETE(
       .eq("id", id)
       .single();
 
-    if (!listing || listing.seller_id !== userId) {
+    if (!listing || listing.seller_id !== user.id) {
       return NextResponse.json(
         { error: "Not authorized" },
         { status: 403 }

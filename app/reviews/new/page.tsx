@@ -71,7 +71,9 @@ function ReviewForm() {
             >
               {loading ? 'Submitting...' : 'Submit Review'}
             </button>
-      </form>
+          </form>
+        </div>
+      </div>
     </main>
   )
 }

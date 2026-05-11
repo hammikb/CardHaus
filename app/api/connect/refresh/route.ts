@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -17,7 +17,7 @@ export async function GET() {
     return NextResponse.redirect(new URL('/dashboard/connect', process.env.NEXT_PUBLIC_APP_URL))
   }
 
-  const accountLink = await stripe.accountLinks.create({
+  const accountLink = await getStripe().accountLinks.create({
     account: profile.stripe_account_id,
     refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/connect/refresh`,
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/connect?success=true`,

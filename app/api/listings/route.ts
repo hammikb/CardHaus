@@ -98,6 +98,7 @@ export async function GET(request: NextRequest) {
     const condition = searchParams.get("condition");
     const searchQuery = searchParams.get("q");
     const limit = parseInt(searchParams.get("limit") || "50");
+    const mine = searchParams.get("mine") === "1";
 
     let query = supabaseServiceRole
       .from("listings")
@@ -112,6 +113,22 @@ export async function GET(request: NextRequest) {
       .eq("is_auction", false)
       .order("created_at", { ascending: false })
       .limit(limit);
+
+    if (mine) {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        return NextResponse.json(
+          { error: "Must be authenticated" },
+          { status: 401 }
+        );
+      }
+
+      query = query.eq("seller_id", user.id);
+    }
 
     if (cardType) query = query.eq("card_type", cardType);
     if (condition) query = query.eq("condition", condition);

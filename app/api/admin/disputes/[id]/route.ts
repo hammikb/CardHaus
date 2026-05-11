@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { NextRequest, NextResponse } from 'next/server'
 
 async function getAdminSupabase() {
@@ -27,7 +27,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
 
   if (resolution === 'refund' && order.stripe_payment_intent_id) {
-    await stripe.refunds.create({ payment_intent: order.stripe_payment_intent_id })
+    await getStripe().refunds.create({ payment_intent: order.stripe_payment_intent_id })
     await supabase.from('orders').update({ status: 'refunded' }).eq('id', id)
   } else if (resolution === 'release') {
     await supabase.from('orders').update({ status: 'delivered' }).eq('id', id)

@@ -24,7 +24,7 @@ export default function DashboardPage() {
     let cancelled = false;
 
     async function loadListings() {
-      const res = await fetch("/api/listings");
+      const res = await fetch("/api/listings?mine=1");
       const data = await res.json();
       if (!cancelled) {
         setListings(data.listings || []);
@@ -43,7 +43,6 @@ export default function DashboardPage() {
     if (!confirm("Delete this listing?")) return;
     const res = await fetch(`/api/listings/${id}`, {
       method: "DELETE",
-      headers: { "x-user-id": "user-id-from-auth" },
     });
     if (res.ok) {
       setListings(listings.filter((l) => l.id !== id));

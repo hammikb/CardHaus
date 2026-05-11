@@ -13,7 +13,7 @@ export default function BuyNowButton({ listingId }: { listingId: string }) {
     })
     const data = await res.json()
     if (data.url) window.location.href = data.url
-    else { alert(data.error); setLoading(false) }
+    else { alert(data.error || 'Unable to start checkout'); setLoading(false) }
   }
 
   return (
