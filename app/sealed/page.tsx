@@ -42,11 +42,11 @@ export default async function SealedPage(props: { searchParams: Promise<Record<s
   const cards = listings || []
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="mb-8">
-          <h1 className="text-4xl font-black text-slate-900 mb-2">Sealed Products</h1>
-          <p className="text-slate-600">Browse factory sealed booster boxes, packs, and more</p>
+        <div className="mb-12">
+          <h1 className="text-4xl font-black text-slate-950 mb-3">Sealed Products</h1>
+          <p className="text-slate-600 text-lg">Factory sealed booster boxes, packs, tins, and more</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12">

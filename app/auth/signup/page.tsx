@@ -28,51 +28,57 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-900 to-slate-900 p-4">
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20"></div>
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-indigo-500 rounded-full blur-3xl opacity-15"></div>
+      </div>
+      <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md p-8 border border-white/20">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            CardHaus
-          </h1>
-          <p className="text-slate-600">Create your account</p>
+          <h1 className="text-4xl font-black text-slate-950 mb-3">CardHaus</h1>
+          <p className="text-slate-600 text-base">Create your account and start trading</p>
         </div>
-        <form onSubmit={handleSignup} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+            <label className="block text-sm font-bold text-slate-900 mb-2.5">Email address</label>
             <input
               type="email"
               placeholder="your@email.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full border border-slate-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-slate-50"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Password</label>
+            <label className="block text-sm font-bold text-slate-900 mb-2.5">Password</label>
             <input
               type="password"
               placeholder="••••••••"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full border border-slate-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-slate-50"
               required
               minLength={6}
             />
-            <p className="text-xs text-slate-500 mt-1">Minimum 6 characters</p>
+            <p className="text-xs text-slate-500 mt-2">Minimum 6 characters</p>
           </div>
-          {error && <p className="text-red-600 text-sm font-medium bg-red-50 px-4 py-2 rounded-lg">{error}</p>}
+          {error && (
+            <p className="text-red-700 text-sm font-medium bg-red-50 px-4 py-3 rounded-lg border border-red-200">
+              {error}
+            </p>
+          )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-bold hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-base transition-all duration-200 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed mt-8"
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
-        <p className="mt-6 text-sm text-center text-slate-600">
-          Have an account?{' '}
-          <Link href="/auth/login" className="text-blue-600 font-semibold hover:text-blue-700">
+        <p className="mt-8 text-sm text-center text-slate-600">
+          Already have an account?{' '}
+          <Link href="/auth/login" className="text-blue-600 font-bold hover:text-blue-700 transition-colors">
             Sign in
           </Link>
         </p>
