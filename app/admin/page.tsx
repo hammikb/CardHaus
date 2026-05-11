@@ -13,29 +13,40 @@ export default async function AdminPage() {
   const totalRevenue = revenueData?.reduce((sum, o) => sum + o.platform_fee, 0) ?? 0
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-white border rounded-lg p-6">
-          <p className="text-3xl font-bold">${totalRevenue.toFixed(2)}</p>
-          <p className="text-gray-500 mt-1">Platform Revenue</p>
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <div className="max-w-6xl mx-auto px-4 py-12">
+        <div className="mb-12">
+          <h1 className="text-4xl font-black text-slate-950 mb-3">Admin Dashboard</h1>
+          <p className="text-slate-600">Platform metrics and moderation tools</p>
         </div>
-        <div className="bg-white border rounded-lg p-6">
-          <p className="text-3xl font-bold text-yellow-600">{pendingVendors ?? 0}</p>
-          <p className="text-gray-500 mt-1">Vendor Applications</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 hover:shadow-lg hover:border-slate-300 transition-all">
+            <p className="text-sm font-bold text-slate-600 mb-2 uppercase tracking-wide">Platform Revenue</p>
+            <p className="text-4xl font-black text-slate-950">${totalRevenue.toFixed(2)}</p>
+          </div>
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 hover:shadow-lg hover:border-slate-300 transition-all">
+            <p className="text-sm font-bold text-slate-600 mb-2 uppercase tracking-wide">Pending Vendors</p>
+            <p className="text-4xl font-black text-amber-600">{pendingVendors ?? 0}</p>
+          </div>
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 hover:shadow-lg hover:border-slate-300 transition-all">
+            <p className="text-sm font-bold text-slate-600 mb-2 uppercase tracking-wide">Open Disputes</p>
+            <p className="text-4xl font-black text-red-600">{openDisputes ?? 0}</p>
+          </div>
         </div>
-        <div className="bg-white border rounded-lg p-6">
-          <p className="text-3xl font-bold text-red-600">{openDisputes ?? 0}</p>
-          <p className="text-gray-500 mt-1">Open Disputes</p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link
+            href="/admin/vendors"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-blue-600 text-white font-bold text-sm transition-all duration-200 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 active:translate-y-0.5"
+          >
+            Review Vendor Applications
+          </Link>
+          <Link
+            href="/admin/disputes"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white border border-slate-300 text-slate-900 font-bold text-sm transition-all duration-200 hover:bg-slate-50 hover:border-slate-400"
+          >
+            Manage Disputes
+          </Link>
         </div>
-      </div>
-      <div className="flex gap-4">
-        <Link href="/admin/vendors" className="border px-4 py-2 rounded font-semibold hover:bg-gray-50">
-          Review Vendor Applications
-        </Link>
-        <Link href="/admin/disputes" className="border px-4 py-2 rounded font-semibold hover:bg-gray-50">
-          Manage Disputes
-        </Link>
       </div>
     </main>
   )

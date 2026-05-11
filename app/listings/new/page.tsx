@@ -34,29 +34,32 @@ const PRODUCT_TYPES = [
 
 export default function ListingTypePage() {
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12">
-      <div className="mb-12">
-        <h1 className="text-4xl font-black text-slate-900 mb-2">What are you selling?</h1>
-        <p className="text-slate-600">Choose the type of trading card product</p>
-      </div>
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <div className="max-w-5xl mx-auto px-4 py-12">
+        <div className="mb-12">
+          <h1 className="text-4xl font-black text-slate-950 mb-3">What are you selling?</h1>
+          <p className="text-slate-600 text-lg">Choose a listing type to get started</p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {PRODUCT_TYPES.map(product => (
-          <Link
-            key={product.type}
-            href={product.href}
-            className="group bg-white border border-slate-200 rounded-xl p-8 hover:border-blue-500 hover:shadow-lg transition-all"
-          >
-            <div className="text-5xl mb-4">{product.icon}</div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
-              {product.title}
-            </h2>
-            <p className="text-slate-600">{product.description}</p>
-            <div className="mt-6 text-blue-600 font-semibold group-hover:translate-x-1 transition-transform">
-              Start listing →
-            </div>
-          </Link>
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {PRODUCT_TYPES.map(product => (
+            <Link
+              key={product.type}
+              href={product.href}
+              className="group bg-white border border-slate-200 rounded-xl p-6 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200"
+            >
+              <div className="text-5xl mb-4 block">{product.icon}</div>
+              <h2 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+                {product.title}
+              </h2>
+              <p className="text-sm text-slate-600 mb-6">{product.description}</p>
+              <div className="text-blue-600 font-bold text-sm group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                Next
+                <span>→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </main>
   )
