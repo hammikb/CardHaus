@@ -1,13 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
-import BuyNowButton from '@/components/buy-now-button'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+
+type CardListingRow = {
+  id: string
+  condition: string
+  price: number
+  profiles?: {
+    username: string
+    verified_vendor: boolean
+  } | null
+}
 
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: listing } = await supabase
     .from('listings')
@@ -27,7 +35,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
     .eq('status', 'active')
     .order('price', { ascending: true })
 
-  const listingsForCard = allListings || []
+  const listingsForCard = (allListings || []) as CardListingRow[]
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-12">
@@ -72,7 +80,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               </tr>
             </thead>
             <tbody>
-              {listingsForCard.map((item: any, idx: number) => (
+              {listingsForCard.map((item, idx) => (
                 <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="px-6 py-4 border-b border-slate-200">
                     <div className="flex items-center gap-2">

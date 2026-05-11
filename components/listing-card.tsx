@@ -4,7 +4,6 @@ import { Listing } from '@/lib/supabase/types'
 import { formatCurrency } from '@/lib/utils'
 
 type ListingCardData = Listing & {
-  profiles?: { username: string; verified_vendor: boolean }
   card_variant?: {
     image_url: string | null
     cards?: { image_url: string | null } | null
@@ -21,39 +20,34 @@ export default function ListingCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="block bg-white rounded-xl border border-slate-400 overflow-hidden"
+      className="group block overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
     >
-      <div className="aspect-[2/3] bg-white overflow-hidden relative">
+      <div className="relative aspect-[2/3] overflow-hidden bg-gradient-to-b from-slate-50 to-white">
         {coverImage ? (
           <Image
             src={coverImage}
             alt={listing.title}
             fill
-            className="object-contain"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03]"
             loading="lazy"
             priority={false}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">No image</div>
+          <div className="flex h-full w-full items-center justify-center text-sm text-slate-400">No image</div>
         )}
       </div>
-      <div className="p-4">
-        <p className="font-semibold text-sm text-slate-900 truncate line-clamp-2 h-10">{listing.title}</p>
-        <p className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mt-2">
+      <div className="border-t border-slate-100 p-4">
+        <p className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-slate-950">{listing.title}</p>
+        <p className="mt-3 text-xl font-black tracking-tight text-slate-950">
           {formatCurrency(listing.price)}
         </p>
-        <div className="flex items-center justify-between mt-3 gap-2">
-          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full capitalize">
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className="truncate rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold capitalize text-slate-700">
             {listing.condition.replace('_', ' ')}
           </span>
-          <span className="text-xs font-medium text-slate-500 capitalize">{listing.card_type}</span>
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">{listing.card_type}</span>
         </div>
-        {listing.profiles && (
-          <div className="flex items-center gap-1 mt-3 text-xs">
-            <span className="text-slate-600">{listing.profiles.username}</span>
-            {listing.profiles.verified_vendor && <span className="text-blue-600 font-bold">✓</span>}
-          </div>
-        )}
       </div>
     </Link>
   )
