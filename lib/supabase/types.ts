@@ -43,7 +43,9 @@ export interface Order {
   buyer_id: string
   seller_id: string
   listing_id: string
+  quantity: number
   total: number
+  unit_price: number
   platform_fee: number
   shipping_cost: number
   stripe_payment_intent_id: string | null
@@ -53,6 +55,18 @@ export interface Order {
   status: OrderStatus
   created_at: string
   listings?: Listing
+}
+
+export interface MarketSnapshot {
+  id: string
+  card_id: string
+  card_variant_id: string | null
+  source: string
+  label: string
+  price: number
+  url: string | null
+  captured_at: string
+  created_at: string
 }
 
 export interface Auction {

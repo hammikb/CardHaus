@@ -8,7 +8,7 @@ export default async function HomePage() {
 
   const { data: recent } = await supabase
     .from('listings')
-    .select('*, profiles(username, verified_vendor)')
+    .select('*, profiles(username, verified_vendor), card_variant:card_variants(set_name, rarity, image_url, cards(image_url))')
     .eq('status', 'active')
     .eq('is_auction', false)
     .order('created_at', { ascending: false })
@@ -46,6 +46,23 @@ export default async function HomePage() {
             >
               List Your Cards
             </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto grid max-w-7xl gap-4 px-4 py-6 sm:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Live inventory</p>
+            <p className="mt-1 text-2xl font-black text-slate-950">{recent?.reduce((sum, listing) => sum + Number(listing.quantity || 0), 0) ?? 0}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Active sellers</p>
+            <p className="mt-1 text-2xl font-black text-slate-950">{new Set((recent || []).map((listing) => listing.seller_id)).size}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Market context</p>
+            <p className="mt-1 text-sm font-semibold text-slate-700">Listing pages now surface seller inventory and live market pricing.</p>
           </div>
         </div>
       </section>

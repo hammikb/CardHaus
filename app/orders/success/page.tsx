@@ -18,14 +18,14 @@ export default async function OrderSuccessPage({ searchParams }: { searchParams:
 
   if (session_id) {
     const session = await getStripe().checkout.sessions.retrieve(session_id)
-    const listingId = session.metadata?.listing_id
     const buyerId = session.metadata?.buyer_id
+    const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : null
 
-    if (buyerId === user.id && listingId) {
+    if (buyerId === user.id && paymentIntentId) {
       const { data } = await supabase
         .from('orders')
         .select('*, listings(title)')
-        .eq('listing_id', listingId)
+        .eq('stripe_payment_intent_id', paymentIntentId)
         .eq('buyer_id', user.id)
         .maybeSingle()
 
@@ -51,6 +51,10 @@ export default async function OrderSuccessPage({ searchParams }: { searchParams:
                 <div className="flex justify-between gap-4">
                   <span className="text-slate-600">Order total</span>
                   <span className="font-bold text-slate-950">{formatCurrency(Number(order.total))}</span>
+                </div>
+                <div className="mt-2 flex justify-between gap-4">
+                  <span className="text-slate-600">Quantity</span>
+                  <span className="font-bold text-slate-950">{order.quantity}</span>
                 </div>
                 <div className="mt-2 flex justify-between gap-4">
                   <span className="text-slate-600">Status</span>

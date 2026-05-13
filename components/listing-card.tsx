@@ -4,9 +4,15 @@ import { Listing } from '@/lib/supabase/types'
 import { formatCurrency } from '@/lib/utils'
 
 type ListingCardData = Listing & {
+  profiles?: {
+    username: string
+    verified_vendor: boolean
+  } | null
   card_variant?: {
+    set_name?: string | null
+    rarity?: string | null
     image_url: string | null
-    cards?: { image_url: string | null } | null
+    cards?: { image_url: string | null; number?: string | null } | null
   } | null
 }
 
@@ -39,6 +45,12 @@ export default function ListingCard({ listing }: { listing: ListingCardData }) {
       </div>
       <div className="border-t border-slate-100 p-4">
         <p className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-slate-950">{listing.title}</p>
+        {listing.card_variant?.set_name && (
+          <p className="mt-2 truncate text-xs font-medium text-slate-500">
+            {listing.card_variant.set_name}
+            {listing.card_variant.rarity ? ` • ${listing.card_variant.rarity}` : ''}
+          </p>
+        )}
         <p className="mt-3 text-xl font-black tracking-tight text-slate-950">
           {formatCurrency(listing.price)}
         </p>
@@ -46,7 +58,13 @@ export default function ListingCard({ listing }: { listing: ListingCardData }) {
           <span className="truncate rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold capitalize text-slate-700">
             {listing.condition.replace('_', ' ')}
           </span>
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">{listing.card_type}</span>
+          <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700">
+            Qty {listing.quantity}
+          </span>
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-2 text-xs text-slate-500">
+          <span className="truncate">{listing.profiles?.username ?? 'CardHaus seller'}</span>
+          <span className="font-semibold uppercase tracking-wide text-slate-400">{listing.card_type}</span>
         </div>
       </div>
     </Link>

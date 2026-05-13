@@ -5,7 +5,7 @@ const PRODUCT_TYPES = [
   {
     type: 'single',
     title: 'Single Card',
-    description: 'List individual cards in any condition',
+    description: 'List individual cards in any condition, including multi-copy inventory',
     icon: '🎴',
     href: '/listings/singles/new',
   },

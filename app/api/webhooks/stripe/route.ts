@@ -1,3 +1,4 @@
+import { calculatePlatformFee } from '@/lib/utils'
 import { getStripe } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -47,37 +48,68 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabaseAdmin()
     const session = event.data.object
     const { listing_id, buyer_id, seller_id } = session.metadata || {}
+    const quantity = Number(session.metadata?.quantity ?? 1)
+    const unitPrice = Number(session.metadata?.unit_price ?? 0)
+    const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : null
 
     if (!listing_id || !buyer_id || !seller_id) {
       return NextResponse.json({ error: 'Missing checkout metadata' }, { status: 400 })
     }
 
+    if (!paymentIntentId) {
+      return NextResponse.json({ error: 'Missing payment intent id' }, { status: 400 })
+    }
+
+    const { data: existingOrder } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('stripe_payment_intent_id', paymentIntentId)
+      .maybeSingle()
+
+    if (existingOrder) {
+      return NextResponse.json({ received: true })
+    }
+
     const { data: listing } = await supabase
       .from('listings')
-      .select('price')
+      .select('id')
       .eq('id', listing_id)
       .single()
 
     if (!listing) return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
 
-    const platformFee = Math.round(listing.price * Number(process.env.PLATFORM_FEE_PERCENT ?? 10)) / 100
+    const { error: purchaseError } = await supabase.rpc('apply_listing_purchase', {
+      p_listing_id: listing_id,
+      p_purchase_quantity: quantity,
+    })
+
+    if (purchaseError) {
+      console.error('Stripe webhook inventory update error:', purchaseError)
+      return NextResponse.json({ error: 'Unable to update listing inventory' }, { status: 409 })
+    }
+
+    const total = typeof session.amount_total === 'number'
+      ? Math.round(session.amount_total) / 100
+      : Math.round(unitPrice * quantity * 100) / 100
+    const normalizedUnitPrice = unitPrice > 0 ? unitPrice : Math.round((total / quantity) * 100) / 100
+    const platformFee = calculatePlatformFee(total)
 
     const { error: orderError } = await supabase.from('orders').upsert({
       buyer_id,
       seller_id,
       listing_id,
-      total: listing.price,
+      quantity,
+      unit_price: normalizedUnitPrice,
+      total,
       platform_fee: platformFee,
-      stripe_payment_intent_id: typeof session.payment_intent === 'string' ? session.payment_intent : null,
+      stripe_payment_intent_id: paymentIntentId,
       status: 'paid',
-    }, { onConflict: 'listing_id' })
+    }, { onConflict: 'stripe_payment_intent_id' })
 
     if (orderError) {
       console.error('Stripe webhook order upsert error:', orderError)
       return NextResponse.json({ error: 'Unable to create order' }, { status: 500 })
     }
-
-    await supabase.from('listings').update({ status: 'sold' }).eq('id', listing_id)
   }
 
   if (event.type === 'account.updated') {

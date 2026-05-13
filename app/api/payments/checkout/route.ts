@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { clampRequestedQuantity } from '@/lib/checkout'
 import { getStripe } from '@/lib/stripe'
 import { calculatePlatformFee } from '@/lib/utils'
 import { NextRequest, NextResponse } from 'next/server'
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { listing_id } = await request.json()
+    const { listing_id, quantity } = await request.json()
     if (!listing_id) return NextResponse.json({ error: 'listing_id required' }, { status: 400 })
 
     const { data: listing } = await supabase
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
     if (listing.seller_id === user.id) return NextResponse.json({ error: 'Cannot buy own listing' }, { status: 400 })
     if (!listing.profiles?.stripe_account_id) return NextResponse.json({ error: 'Seller has not connected Stripe yet' }, { status: 400 })
     if (!listing.profiles.stripe_onboarded) return NextResponse.json({ error: 'Seller Stripe account is still being verified' }, { status: 400 })
+    if (listing.quantity < 1) return NextResponse.json({ error: 'Listing is out of stock' }, { status: 400 })
 
     const stripe = getStripe()
     const account = await stripe.accounts.retrieve(listing.profiles.stripe_account_id)
@@ -31,8 +33,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Seller Stripe account is not ready for payments yet' }, { status: 400 })
     }
 
-    const priceInCents = Math.round(Number(listing.price) * 100)
-    const feeInCents = Math.round(calculatePlatformFee(Number(listing.price)) * 100)
+    const purchaseQuantity = clampRequestedQuantity(quantity, listing.quantity)
+    const unitPrice = Number(listing.price)
+    const priceInCents = Math.round(unitPrice * 100)
+    const feeInCents = Math.round(calculatePlatformFee(unitPrice * purchaseQuantity) * 100)
 
     const session = await stripe.checkout.sessions.create({
       line_items: [{
@@ -41,7 +45,7 @@ export async function POST(request: NextRequest) {
           product_data: { name: listing.title, images: (listing.images || []).slice(0, 1) },
           unit_amount: priceInCents,
         },
-        quantity: 1,
+        quantity: purchaseQuantity,
       }],
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/orders/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -51,9 +55,15 @@ export async function POST(request: NextRequest) {
         application_fee_amount: feeInCents,
         transfer_data: { destination: listing.profiles.stripe_account_id },
       },
-      metadata: { listing_id, buyer_id: user.id, seller_id: listing.seller_id },
+      metadata: {
+        listing_id,
+        buyer_id: user.id,
+        seller_id: listing.seller_id,
+        quantity: String(purchaseQuantity),
+        unit_price: String(unitPrice),
+      },
     }, {
-      idempotencyKey: `checkout:${listing_id}:${user.id}`,
+      idempotencyKey: `checkout:${listing_id}:${user.id}:${purchaseQuantity}`,
     })
 
     return NextResponse.json({ url: session.url })

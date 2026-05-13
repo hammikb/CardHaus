@@ -29,6 +29,7 @@ export default function NewSingleListingPage() {
     title: '', description: '', price: '',
     card_type: 'pokemon', condition: 'near_mint',
     grade: '', grade_company: '',
+    quantity: '1',
   })
 
   function set(field: string, value: string) {
@@ -63,6 +64,7 @@ export default function NewSingleListingPage() {
       body: JSON.stringify({
         ...form,
         price: Number(form.price),
+        quantity: Number(form.quantity),
         images,
         product_type: 'single',
         listing_type: 'single',
@@ -104,7 +106,7 @@ export default function NewSingleListingPage() {
           />
         </div>
         <PhotoUpload value={images} onChange={setImages} />
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-bold text-slate-900 mb-2">Price (USD) *</label>
             <input
@@ -114,6 +116,17 @@ export default function NewSingleListingPage() {
               value={form.price}
               onChange={e => set('price', e.target.value)}
               placeholder="0.00"
+              className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-900 mb-2">Quantity *</label>
+            <input
+              type="number"
+              min="1"
+              value={form.quantity}
+              onChange={e => set('quantity', e.target.value)}
               className="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               required
             />

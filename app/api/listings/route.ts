@@ -43,6 +43,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const normalizedQuantity = Number(quantity);
+    if (!Number.isInteger(normalizedQuantity) || normalizedQuantity < 1) {
+      return NextResponse.json(
+        { error: "Quantity must be a whole number greater than 0" },
+        { status: 400 }
+      );
+    }
+
     if (listingType === "single" && !card_variant_id) {
       return NextResponse.json(
         { error: "Choose a card from the card database before listing a single" },
@@ -72,7 +80,7 @@ export async function POST(request: NextRequest) {
         images,
         product_type,
         sealed_type: sealed_type || null,
-        quantity,
+        quantity: normalizedQuantity,
         listing_type: listingType,
         is_auction: false,
       })
@@ -105,7 +113,7 @@ export async function GET(request: NextRequest) {
       .select(
         `*,
         profiles(username, verified_vendor),
-        card_variant:card_variants(set_name, language, image_url, cards(name, image_url)),
+        card_variant:card_variants(id, set_name, language, rarity, image_url, cards(id, name, number, image_url)),
         product:products(name, set_name)`
       )
       .eq("status", "active")

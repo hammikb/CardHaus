@@ -43,7 +43,9 @@ function MarketplaceContent() {
     product_type: searchParams.get('product_type') || 'single',
     card_type: searchParams.get('card_type') || '',
     condition: searchParams.get('condition') || '',
+    q: searchParams.get('q') || '',
   })
+  const [searchInput, setSearchInput] = useState(searchParams.get('q') || '')
 
   // Create debounced filter handler
   const debouncedSetFilter = useRef(
@@ -81,10 +83,12 @@ function MarketplaceContent() {
   }
 
   const handleClearFilters = () => {
+    setSearchInput('')
     setFilters({
       product_type: 'single',
       card_type: '',
       condition: '',
+      q: '',
     })
   }
 
@@ -179,6 +183,30 @@ function MarketplaceContent() {
           </aside>
 
         <section className="min-w-0">
+          <div className="mb-6 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(event) => {
+                setSearchInput(event.target.value)
+                debouncedSetFilter('q', event.target.value)
+              }}
+              placeholder="Search cards, sets, or sellers"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Sellers</p>
+              <p className="mt-1 text-lg font-black text-slate-950">
+                {new Set(listings.map((listing) => listing.seller_id)).size}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Open inventory</p>
+              <p className="mt-1 text-lg font-black text-slate-950">
+                {listings.reduce((sum, listing) => sum + Number(listing.quantity || 0), 0)}
+              </p>
+            </div>
+          </div>
           {loading ? (
             <Suspense fallback={<SkeletonGrid count={12} />}>
               <SkeletonGrid count={12} />
